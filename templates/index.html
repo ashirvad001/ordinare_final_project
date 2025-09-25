@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordinare</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+    <div class="container">
+        <div class="header">
+            <h1>Ordinare</h1>
+            <p>Smart attendance tracking with bunk calculator</p>
+        </div>
+
+        <div class="main-content">
+            <div class="tabs">
+                <button class="tab-button" id="loginTab" onclick="showTab('login')">Login</button>
+                <button class="tab-button" id="signupTab" onclick="showTab('signup')">Sign Up</button>
+                <button class="tab-button active" id="setupTab" onclick="showTab('setup')">Setup</button>
+                <button class="tab-button" id="timetableTab" onclick="showTab('timetable')">Timetable</button>
+                <button class="tab-button" id="attendanceTab" onclick="showTab('attendance')">Attendance</button>
+                <button class="tab-button" id="subjectwiseTab" onclick="showTab('subjectwise')">Subject-wise</button>
+                <button class="tab-button" id="analyticsTab" onclick="showTab('analytics')">Analytics</button>
+                <button class="tab-button" id="profileTab" onclick="showTab('profile')">Profile</button>
+                <button class="tab-button" id="uploadTab" onclick="showTab('upload')">Upload A</button>
+            </div>
+
+            <div id="login" class="tab-content">
+                <h2>Login</h2>
+                <div class="form-group">
+                    <label for="loginUsername">Username:</label>
+                    <input type="text" id="loginUsername" placeholder="Enter your username">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password:</label>
+                    <div class="password-input-container">
+                        <input type="password" id="loginPassword" placeholder="Enter your password">
+                        <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">Show</button>
+                    </div>
+                </div>
+                <button class="btn" onclick="loginUser()">Login</button>
+            </div>
+
+            <div id="signup" class="tab-content">
+                <h2>Sign Up</h2>
+                <div class="form-group">
+                    <label for="signupUsername">Username:</label>
+                    <input type="text" id="signupUsername" placeholder="Choose a username">
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password:</label>
+                    <div class="password-input-container">
+                        <input type="password" id="signupPassword" placeholder="Create a password">
+                        <button type="button" class="password-toggle" onclick="togglePassword('signupPassword')">Show</button>
+                    </div>
+                </div>
+                <button class="btn" onclick="signupUser()">Sign Up</button>
+            </div>
+
+            <div id="setup" class="tab-content active">
+                <h2>Semester Setup</h2>
+                <div class="form-group" style="margin-top: 20px;">
+                    <label for="studentName">Student Name:</label>
+                    <input type="text" id="studentName" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label for="universityRollNo">University Roll No:</label>
+                    <input type="text" id="universityRollNo" placeholder="Enter your university roll number">
+                </div>
+                <div class="form-group">
+                    <label for="semesterName">Semester Name:</label>
+                    <input type="text" id="semesterName" placeholder="e.g., Fall 2024, Semester 5">
+                </div>
+                <div class="form-group">
+                    <label for="numSubjects">Number of Subjects:</label>
+                    <input type="number" id="numSubjects" min="1" max="10" value="5">
+                </div>
+                <button class="btn" onclick="generateSubjectInputs()">Generate Subject Fields</button>
+                <div id="subjectInputs"></div>
+                <div id="setupComplete" style="display: none;">
+                    <div class="alert alert-success">Setup completed! You can now create your timetable.</div>
+                </div>
+            </div>
+
+            <div id="timetable" class="tab-content">
+                <h2>Weekly Timetable</h2>
+                <div id="timetableLocked" class="timetable-locked-state">
+                    <div class="lock-icon">🔒</div>
+                    <h3>Timetable is Locked</h3>
+                    <p>Please complete the semester setup first to unlock the timetable creation.</p>
+                    <button class="btn" onclick="showTab('setup')">Go to Setup</button>
+                </div>
+                <div id="timetableUnlocked" style="display: none;">
+                    <div class="form-group">
+                        <label>Add/Edit Time Slots:</label>
+                        <div class="time-input" style="margin-top: 15px;">
+                            <input type="time" id="startTime" value="09:00">
+                            <span>to</span>
+                            <input type="time" id="endTime" value="10:00">
+                            <button class="btn btn-small" onclick="addTimeSlot()">Add Slot</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Current Time Slots:</label>
+                        <div id="timeSlotsList"></div>
+                    </div>
+                    <div id="timetableContainer"><div class="no-data">Please complete the setup first</div></div>
+                    <div class="timetable-actions" style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="btn" onclick="saveTimetable()" id="saveTimetableBtn">Save Timetable</button>
+                        <button class="btn btn-secondary" onclick="editTimetable()" id="editTimetableBtn" style="display: none;">Edit Timetable</button>
+                    </div>
+                    <div id="timetableComplete" style="display: none; margin-top: 20px;">
+                        <div class="alert alert-success">Timetable saved successfully!</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="subjectwise" class="tab-content">
+                <h2>Subject-wise Attendance Overview</h2>
+                <div id="subjectWiseAttendanceContent"><div class="no-data">No subject data available. Please complete setup.</div></div>
+            </div>
+
+            <div id="attendance" class="tab-content">
+                <h2>Mark Attendance</h2>
+                <div id="attendanceContainer"><div class="no-data">Please set up subjects and timetable first</div></div>
+            </div>
+
+            <div id="analytics" class="tab-content">
+                <h2>Attendance Analytics</h2>
+                <div id="analyticsLocked" class="timetable-locked-state">
+                    <div class="lock-icon">🔒</div>
+                    <h3>Analytics are Locked</h3>
+                    <p>Please mark attendance or upload an attendance file to unlock analytics.</p>
+                    <button class="btn" onclick="showTab('attendance')">Go to Mark Attendance</button>
+                </div>
+                <div id="analyticsUnlocked" style="display: none;">
+                    <div class="bunk-calculator analytics-section">
+                        <h3>Bunk Calculator</h3>
+                        <div class="form-group">
+                            <label for="targetPercentage">Target Attendance Percentage:</label>
+                            <input type="number" id="targetPercentage" min="0" max="100" value="75" style="background: white; color: #333;">
+                        </div>
+                        <div class="analytics-buttons" style="display: flex; flex-direction: column; gap: 10px;">
+                            <button class="btn btn-secondary" onclick="calculateBunks()">Calculate Safe Bunks</button>
+                        </div>
+                        <div id="bunkResults"></div>
+                    </div>
+                    <div class="overall-attendance analytics-section" style="margin-top: 30px;">
+                        <h3>Overall Attendance</h3>
+                        <p id="overallAttendanceDisplay">Loading overall attendance...</p>
+                    </div>
+                    <div class="attendance-plot analytics-section" style="margin-top: 30px;">
+                        <h3>Attendance Visualization</h3>
+                        <div id="attendancePlotDisplay"><div class="no-data">No attendance data to plot.</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="profile" class="tab-content">
+                <h2>Profile</h2>
+                <div class="profile-section">
+                    <div class="profile-info">
+                        <h3>Personal Information</h3>
+                        <div class="profile-grid">
+                            <div class="profile-item"><label>Username:</label><span id="profileUsername">-</span></div>
+                            <div class="profile-item"><label>Student Name:</label><span id="profileStudentName">-</span></div>
+                            <div class="profile-item"><label>University Roll No:</label><span id="profileRollNo">-</span></div>
+                            <div class="profile-item"><label>Semester:</label><span id="profileSemester">-</span></div>
+                            <div class="profile-item"><label>Total Subjects:</label><span id="profileSubjects">-</span></div>
+                            <div class="profile-item"><label>Overall Attendance:</label><span id="profileAttendance">-</span></div>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <h3>Account Actions</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-persian-blue" onclick="logout()">Logout</button>
+                            <button class="btn btn-persian-blue" onclick="clearAllData()">Clear All Data</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="upload" class="tab-content">
+                <h2>Upload Attendance File</h2>
+                <div id="uploadLocked" class="timetable-locked-state">
+                    <div class="lock-icon">🔒</div>
+                    <h3>Upload is Locked</h3>
+                    <p>Please complete the semester setup first to unlock the attendance upload.</p>
+                    <button class="btn" onclick="showTab('setup')">Go to Setup</button>
+                </div>
+                <div id="uploadUnlocked" style="display: none;">
+                    <div class="form-group">
+                        <label for="attendanceFile">Select Excel File (.xlsx, .xls):</label>
+                        <input type="file" id="attendanceFile" accept=".xlsx, .xls">
+                    </div>
+                    <div style="background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                        <p style="font-weight: 600; margin-bottom: 10px; color: #343a40;">Expected Excel Format:</p>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                            <thead>
+                                <tr style="background-color: #e2e6ea;">
+                                    <th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Date</th>
+                                    <th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Subject</th>
+                                    <th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Time Slot</th>
+                                    <th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;">2024-03-15</td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;">Math</td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;">09:00-10:00</td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;">present</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p style="font-size: 0.9em; color: #6c757d;">Ensure 'Status' is either 'present' or 'absent'.</p>
+                    </div>
+                    <button class="btn" onclick="uploadAttendanceFile()">Upload File</button>
+                    <div id="uploadMessage" style="margin-top: 20px; color: green;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="developerInfo" style="position: fixed; bottom: 10px; right: 10px; font-size: 0.95rem; color: rgba(255, 255, 255, 0.7); display: none;">
+        Made by Ayeman Singh
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
