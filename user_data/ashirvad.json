@@ -1,0 +1,122 @@
+{
+    "password": "scrypt:32768:8:1$GNuLZJX0cobMGCaO$5e1f8a91baa7370c38447560fbb0c90e0690a8d4e5f8290a69a62b5f4337e8f4416b6b143db188e24f14901527e06eafdd0ce0fa730e87f131631e19148426d8",
+    "app_data": {
+        "subjects": [
+            {
+                "id": 0,
+                "name": "DBMS"
+            },
+            {
+                "id": 1,
+                "name": "DAA"
+            },
+            {
+                "id": 2,
+                "name": "DA"
+            },
+            {
+                "id": 3,
+                "name": "COI"
+            },
+            {
+                "id": 4,
+                "name": "WT"
+            },
+            {
+                "id": 5,
+                "name": "MLT"
+            }
+        ],
+        "timetable": {
+            "Tuesday-9:00-10:00": 1,
+            "Monday-10:00-11:00": 1,
+            "Monday-12:00-1:00": 2,
+            "Monday-1:00-2:00": 3,
+            "Monday-2:00-3:00": 4,
+            "Monday-3:00-4:00": 2,
+            "Monday-4:00-5:00": 5,
+            "Tuesday-12:00-1:00": 2,
+            "Tuesday-1:00-2:00": 5,
+            "Tuesday-2:00-3:00": 3,
+            "Tuesday-3:00-4:00": 4,
+            "Wednesday-9:00-10:00": 1,
+            "Wednesday-10:00-11:00": 2,
+            "Wednesday-12:00-1:00": 3,
+            "Wednesday-1:00-2:00": 5,
+            "Wednesday-2:00-3:00": 1,
+            "Wednesday-4:00-5:00": 5,
+            "Thursday-4:00-5:00": 3,
+            "Thursday-1:00-2:00": 1,
+            "Thursday-2:00-3:00": 2,
+            "Thursday-12:00-1:00": 4,
+            "Thursday-10:00-11:00": 5,
+            "Thursday-9:00-10:00": 5,
+            "Friday-9:00-10:00": 1,
+            "Friday-12:00-1:00": 2,
+            "Friday-1:00-2:00": 4
+        },
+        "attendanceData": {
+            "1": {
+                "total": 1,
+                "attended": 1,
+                "records": [
+                    {
+                        "key": "1-2025-09-23-9:00-10:00",
+                        "status": "present"
+                    }
+                ]
+            },
+            "2": {
+                "total": 1,
+                "attended": 1,
+                "records": [
+                    {
+                        "key": "2-2025-09-23-12:00-1:00",
+                        "status": "present"
+                    }
+                ]
+            },
+            "3": {
+                "total": 1,
+                "attended": 1,
+                "records": [
+                    {
+                        "key": "3-2025-09-23-2:00-3:00",
+                        "status": "present"
+                    }
+                ]
+            },
+            "4": {
+                "total": 1,
+                "attended": 1,
+                "records": [
+                    {
+                        "key": "4-2025-09-23-3:00-4:00",
+                        "status": "present"
+                    }
+                ]
+            },
+            "5": {
+                "total": 1,
+                "attended": 0,
+                "records": [
+                    {
+                        "key": "5-2025-09-23-1:00-2:00",
+                        "status": "absent"
+                    }
+                ]
+            }
+        },
+        "timeSlots": [
+            "9:00-10:00",
+            "10:00-11:00",
+            "12:00-1:00",
+            "1:00-2:00",
+            "2:00-3:00",
+            "3:00-4:00",
+            "4:00-5:00"
+        ],
+        "studentName": "Ashirvad kumar singh",
+        "universityRollNo": "2301430120042"
+    }
+}
