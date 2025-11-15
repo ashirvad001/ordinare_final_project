@@ -1,0 +1,66 @@
+{
+    "password": "scrypt:32768:8:1$DrGXhvkbICD4AgD8$1660948093e6288d303c02fae6c5e55f5d3db67b07eec889455171ae37ffc573a4383d94dbb0a09cfacd7195d6406e7711f85c2bc39424da1b0a03b376ee3822",
+    "app_data": {
+        "subjects": [
+            {
+                "id": 0,
+                "name": "DBMS"
+            },
+            {
+                "id": 1,
+                "name": "DAA"
+            },
+            {
+                "id": 2,
+                "name": "DA"
+            },
+            {
+                "id": 3,
+                "name": "COI"
+            },
+            {
+                "id": 4,
+                "name": "WT"
+            }
+        ],
+        "timetable": {
+            "Friday-11:00-12:00": 1,
+            "Friday-12:00-1:00": 1,
+            "Friday-1:00-2:00": 2,
+            "Monday-10:00-11:00": 1,
+            "Monday-11:00-12:00": 2,
+            "Monday-12:00-1:00": 3,
+            "Monday-1:00-2:00": 4,
+            "Monday-4:00-5:00": 4,
+            "Thursday-10:00-11:00": 2,
+            "Thursday-1:00-2:00": 4,
+            "Thursday-3:00-4:00": 4,
+            "Thursday-4:00-5:00": 1,
+            "Thursday-9:00-10:00": 2,
+            "Tuesday-11:00-12:00": 3,
+            "Tuesday-12:00-1:00": 2,
+            "Tuesday-1:00-2:00": 2,
+            "Tuesday-3:00-4:00": 3,
+            "Tuesday-4:00-5:00": 2,
+            "Tuesday-9:00-10:00": 1,
+            "Wednesday-11:00-12:00": 1,
+            "Wednesday-12:00-1:00": 2,
+            "Wednesday-1:00-2:00": 3,
+            "Wednesday-3:00-4:00": 4,
+            "Wednesday-4:00-5:00": 4
+        },
+        "attendanceData": {},
+        "timeSlots": [
+            "9:00-10:00",
+            "10:00-11:00",
+            "11:00-12:00",
+            "12:00-1:00",
+            "1:00-2:00",
+            "2:00-3:00",
+            "3:00-4:00",
+            "4:00-5:00"
+        ],
+        "studentName": "Rahul Kumar",
+        "universityRollNo": "2301430120001"
+    }
+}

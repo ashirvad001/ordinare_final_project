@@ -3,232 +3,642 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ordinare</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Ordinare - Smart Student Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced_style.css') }}">
 </head>
 <body>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-</body>
-    <div class="container">
-        <div class="header">
-            <h1>Ordinare</h1>
-            <p>Smart attendance tracking with bunk calculator</p>
+    <!-- Header -->
+    <header class="app-header py-3">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <img src="static/ordinare-logo.png" 
+                         alt="Ordinare Logo" 
+                         style="height: 70px; object-fit: contain;">
+                    <div>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-light text-success version-badge-small">V2.0</span>
+                        </div>
+                        <p class="text-white-50 mb-0 small d-none d-md-block">
+                            Smart Student Management System
+                        </p>
+                    </div>
+                </div>
+                <div id="headerUserInfo" class="text-white d-none">
+                    <div class="text-end">
+                        <div class="fw-bold" id="headerUsername">Welcome!</div>
+                        <small class="opacity-75">Logged in</small>
+                    </div>
+                </div>
+            </div>
         </div>
+    </header>
 
-        <div class="main-content">
-            <div class="tabs">
-                <button class="tab-button" id="loginTab" onclick="showTab('login')">Login</button>
-                <button class="tab-button" id="signupTab" onclick="showTab('signup')">Sign Up</button>
-                <button class="tab-button active" id="setupTab" onclick="showTab('setup')">Setup</button>
-                <button class="tab-button" id="timetableTab" onclick="showTab('timetable')">Timetable</button>
-                <button class="tab-button" id="attendanceTab" onclick="showTab('attendance')">Attendance</button>
-                <button class="tab-button" id="subjectwiseTab" onclick="showTab('subjectwise')">Subject-wise</button>
-                <button class="tab-button" id="analyticsTab" onclick="showTab('analytics')">Analytics</button>
-                <button class="tab-button" id="profileTab" onclick="showTab('profile')">Profile</button>
-                <button class="tab-button" id="uploadTab" onclick="showTab('upload')">Upload A</button>
-            </div>
-
-            <div id="login" class="tab-content">
-                <h2>Login</h2>
-                <div class="form-group">
-                    <label for="loginUsername">Username:</label>
-                    <input type="text" id="loginUsername" placeholder="Enter your username">
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Password:</label>
-                    <div class="password-input-container">
-                        <input type="password" id="loginPassword" placeholder="Enter your password">
-                        <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">Show</button>
-                    </div>
-                </div>
-                <button class="btn" onclick="loginUser()">Login</button>
-            </div>
-
-            <div id="signup" class="tab-content">
-                <h2>Sign Up</h2>
-                <div class="form-group">
-                    <label for="signupUsername">Username:</label>
-                    <input type="text" id="signupUsername" placeholder="Choose a username">
-                </div>
-                <div class="form-group">
-                    <label for="signupPassword">Password:</label>
-                    <div class="password-input-container">
-                        <input type="password" id="signupPassword" placeholder="Create a password">
-                        <button type="button" class="password-toggle" onclick="togglePassword('signupPassword')">Show</button>
-                    </div>
-                </div>
-                <button class="btn" onclick="signupUser()">Sign Up</button>
-            </div>
-
-            <div id="setup" class="tab-content active">
-                <h2>Semester Setup</h2>
-                <div class="form-group" style="margin-top: 20px;">
-                    <label for="studentName">Student Name:</label>
-                    <input type="text" id="studentName" placeholder="Enter your name">
-                </div>
-                <div class="form-group">
-                    <label for="universityRollNo">University Roll No:</label>
-                    <input type="text" id="universityRollNo" placeholder="Enter your university roll number">
-                </div>
-                <div class="form-group">
-                    <label for="semesterName">Semester Name:</label>
-                    <input type="text" id="semesterName" placeholder="e.g., Fall 2024, Semester 5">
-                </div>
-                <div class="form-group">
-                    <label for="numSubjects">Number of Subjects:</label>
-                    <input type="number" id="numSubjects" min="1" max="10" value="5">
-                </div>
-                <button class="btn" onclick="generateSubjectInputs()">Generate Subject Fields</button>
-                <div id="subjectInputs"></div>
-                <div id="setupComplete" style="display: none;">
-                    <div class="alert alert-success">Setup completed! You can now create your timetable.</div>
-                </div>
-            </div>
-
-            <div id="timetable" class="tab-content">
-                <h2>Weekly Timetable</h2>
-                <div id="timetableLocked" class="timetable-locked-state">
-                    <div class="lock-icon">🔒</div>
-                    <h3>Timetable is Locked</h3>
-                    <p>Please complete the semester setup first to unlock the timetable creation.</p>
-                    <button class="btn" onclick="showTab('setup')">Go to Setup</button>
-                </div>
-                <div id="timetableUnlocked" style="display: none;">
-                    <div class="form-group">
-                        <label>Add/Edit Time Slots:</label>
-                        <div class="time-input" style="margin-top: 15px;">
-                            <input type="time" id="startTime" value="09:00">
-                            <span>to</span>
-                            <input type="time" id="endTime" value="10:00">
-                            <button class="btn btn-small" onclick="addTimeSlot()">Add Slot</button>
+    <div class="container-fluid main-container">
+        <div class="row g-4">
+            <!-- Sidebar Navigation (Desktop) -->
+            <div class="col-lg-3 d-none d-lg-block">
+                <div class="sidebar p-3">
+                    <!-- Auth Section -->
+                    <div id="authNavSection">
+                        <div class="nav-item py-3 px-3 rounded mb-2" onclick="showTab('login')">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Login
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Current Time Slots:</label>
-                        <div id="timeSlotsList"></div>
-                    </div>
-                    <div id="timetableContainer"><div class="no-data">Please complete the setup first</div></div>
-                    <div class="timetable-actions" style="display: flex; gap: 10px; margin-top: 20px;">
-                        <button class="btn" onclick="saveTimetable()" id="saveTimetableBtn">Save Timetable</button>
-                        <button class="btn btn-secondary" onclick="editTimetable()" id="editTimetableBtn" style="display: none;">Edit Timetable</button>
-                    </div>
-                    <div id="timetableComplete" style="display: none; margin-top: 20px;">
-                        <div class="alert alert-success">Timetable saved successfully!</div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="subjectwise" class="tab-content">
-                <h2>Subject-wise Attendance Overview</h2>
-                <div id="subjectWiseAttendanceContent"><div class="no-data">No subject data available. Please complete setup.</div></div>
-            </div>
-
-            <div id="attendance" class="tab-content">
-                <h2>Mark Attendance</h2>
-                <div id="attendanceContainer"><div class="no-data">Please set up subjects and timetable first</div></div>
-            </div>
-
-            <div id="analytics" class="tab-content">
-                <h2>Attendance Analytics</h2>
-                <div id="analyticsLocked" class="timetable-locked-state">
-                    <div class="lock-icon">🔒</div>
-                    <h3>Analytics are Locked</h3>
-                    <p>Please mark attendance or upload an attendance file to unlock analytics.</p>
-                    <button class="btn" onclick="showTab('attendance')">Go to Mark Attendance</button>
-                </div>
-                <div id="analyticsUnlocked" style="display: none;">
-                    <div class="bunk-calculator analytics-section">
-                        <h3>Bunk Calculator</h3>
-                        <div class="form-group">
-                            <label for="targetPercentage">Target Attendance Percentage:</label>
-                            <input type="number" id="targetPercentage" min="0" max="100" value="75" style="background: white; color: #333;">
+                        <div class="nav-item py-3 px-3 rounded mb-2" onclick="showTab('signup')">
+                            <i class="bi bi-person-plus me-2"></i> Sign Up
                         </div>
-                        <div class="analytics-buttons" style="display: flex; flex-direction: column; gap: 10px;">
-                            <button class="btn btn-secondary" onclick="calculateBunks()">Calculate Safe Bunks</button>
-                        </div>
-                        <div id="bunkResults"></div>
+                        <hr class="my-3">
                     </div>
-                    <div class="overall-attendance analytics-section" style="margin-top: 30px;">
-                        <h3>Overall Attendance</h3>
-                        <p id="overallAttendanceDisplay">Loading overall attendance...</p>
-                    </div>
-                    <div class="attendance-plot analytics-section" style="margin-top: 30px;">
-                        <h3>Attendance Visualization</h3>
-                        <div id="attendancePlotDisplay"><div class="no-data">No attendance data to plot.</div></div>
-                    </div>
-                </div>
-            </div>
 
-            <div id="profile" class="tab-content">
-                <h2>Profile</h2>
-                <div class="profile-section">
-                    <div class="profile-info">
-                        <h3>Personal Information</h3>
-                        <div class="profile-grid">
-                            <div class="profile-item"><label>Username:</label><span id="profileUsername">-</span></div>
-                            <div class="profile-item"><label>Student Name:</label><span id="profileStudentName">-</span></div>
-                            <div class="profile-item"><label>University Roll No:</label><span id="profileRollNo">-</span></div>
-                            <div class="profile-item"><label>Semester:</label><span id="profileSemester">-</span></div>
-                            <div class="profile-item"><label>Total Subjects:</label><span id="profileSubjects">-</span></div>
-                            <div class="profile-item"><label>Overall Attendance:</label><span id="profileAttendance">-</span></div>
+                    <!-- App Sections -->
+                    <div id="appNavSection" class="d-none">
+                        <div class="text-muted text-uppercase small fw-bold mb-2 px-3">Main</div>
+                        <div class="nav-item py-3 px-3 rounded mb-2 active" onclick="showTab('dashboard')">
+                            <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                            <span class="feature-badge badge-coming-soon float-end">Soon</span>
                         </div>
-                    </div>
-                    <div class="profile-actions">
-                        <h3>Account Actions</h3>
-                        <div class="action-buttons">
-                            <button class="btn btn-persian-blue" onclick="logout()">Logout</button>
-                            <button class="btn btn-persian-blue" onclick="clearAllData()">Clear All Data</button>
+                        <div class="nav-item py-3 px-3 rounded mb-2" onclick="showTab('setup')">
+                            <i class="bi bi-gear-fill me-2"></i> Setup
+                            <span class="feature-badge badge-active float-end">Active</span>
+                        </div>
+
+                        <hr class="my-3">
+                        <div class="text-muted text-uppercase small fw-bold mb-2 px-3">Attendance</div>
+                        <div class="nav-item py-3 px-3 rounded mb-2" onclick="showTab('timetable')">
+                            <i class="bi bi-calendar-week me-2"></i> Timetable
+                            <span class="feature-badge badge-active float-end">Active</span>
+                        </div>
+                        <div class="nav-item py-3 px-3 rounded mb-2" onclick="showTab('attendance')">
+                            <i class="bi bi-check2-square me-2"></i> Mark Attendance
+                            <span class="feature-badge badge-active float-end">Active</span>
+                        </div>
+                        <div class="nav-item py-3 px-3 rounded mb-2" onclick="showTab('subjectwise')">
+                            <i class="bi bi-journals me-2"></i> Subject-wise
+                            <span class="feature-badge badge-active float-end">Active</span>
+                        </div>
+                        <div class="nav-item py-3 px-3 rounded mb-2" onclick="showTab('analytics')">
+                            <i class="bi bi-calculator me-2"></i> Bunk Calculator
+                            <span class="feature-badge badge-active float-end">Active</span>
+                        </div>
+
+                        <hr class="my-3">
+                        <div class="text-muted text-uppercase small fw-bold mb-2 px-3">Future Features</div>
+                        <div class="nav-item py-3 px-3 rounded mb-2" onclick="showTab('scorePrediction')">
+                            <i class="bi bi-graph-up-arrow me-2"></i> Score Prediction
+                            <span class="feature-badge badge-coming-soon float-end">Soon</span>
+                        </div>
+                        <div class="nav-item py-3 px-3 rounded mb-2" onclick="showTab('studyTracker')">
+                            <i class="bi bi-clock-history me-2"></i> Study Tracker
+                            <span class="feature-badge badge-coming-soon float-end">Soon</span>
+                        </div>
+
+                        <hr class="my-3">
+                        <div class="text-muted text-uppercase small fw-bold mb-2 px-3">Account</div>
+                        <div class="nav-item py-3 px-3 rounded mb-2" onclick="showTab('profile')">
+                            <i class="bi bi-person-circle me-2"></i> Profile
+                        </div>
+                        <div class="nav-item py-3 px-3 rounded mb-2" onclick="showTab('upload')">
+                            <i class="bi bi-cloud-upload me-2"></i> Upload Data
+                        </div>
+                        <div class="nav-item py-3 px-3 rounded text-danger" onclick="logout()">
+                            <i class="bi bi-box-arrow-left me-2"></i> Logout
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="upload" class="tab-content">
-                <h2>Upload Attendance File</h2>
-                <div id="uploadLocked" class="timetable-locked-state">
-                    <div class="lock-icon">🔒</div>
-                    <h3>Upload is Locked</h3>
-                    <p>Please complete the semester setup first to unlock the attendance upload.</p>
-                    <button class="btn" onclick="showTab('setup')">Go to Setup</button>
+            <!-- Mobile Bottom Navigation -->
+            <div class="mobile-nav d-lg-none fixed-bottom">
+                <div class="d-flex" id="mobileNavContainer">
+                    <div class="mobile-nav-item" onclick="showTab('dashboard')">
+                        <i class="bi bi-speedometer2 d-block mb-1"></i>
+                        <small>Dashboard</small>
+                    </div>
+                    <div class="mobile-nav-item" onclick="showTab('attendance')">
+                        <i class="bi bi-check2-square d-block mb-1"></i>
+                        <small>Attend</small>
+                    </div>
+                    <div class="mobile-nav-item" onclick="showTab('analytics')">
+                        <i class="bi bi-calculator d-block mb-1"></i>
+                        <small>Bunk</small>
+                    </div>
+                    <div class="mobile-nav-item" onclick="showTab('profile')">
+                        <i class="bi bi-person-circle d-block mb-1"></i>
+                        <small>Profile</small>
+                    </div>
                 </div>
-                <div id="uploadUnlocked" style="display: none;">
-                    <div class="form-group">
-                        <label for="attendanceFile">Select Excel File (.xlsx, .xls):</label>
-                        <input type="file" id="attendanceFile" accept=".xlsx, .xls">
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="col-lg-9">
+                <div class="content-area p-4 mb-5 mb-lg-0">
+                    <!-- Login Tab -->
+                    <div id="login" class="tab-content-panel">
+                        <div class="auth-card">
+                            <div class="auth-header">
+                                <i class="bi bi-shield-check" style="font-size: 3rem;"></i>
+                                <h2 class="mt-3 mb-0">Welcome Back</h2>
+                                <p class="mb-0 opacity-75">Login to access your dashboard</p>
+                            </div>
+                            <div class="p-4">
+                                <div class="mb-3 position-relative">
+                                    <i class="bi bi-person-fill input-icon"></i>
+                                    <input type="text" id="loginUsername" class="form-control form-control-lg form-control-icon" placeholder="Username">
+                                </div>
+                                <div class="mb-4 position-relative">
+                                    <i class="bi bi-lock-fill input-icon"></i>
+                                    <input type="password" id="loginPassword" class="form-control form-control-lg form-control-icon" placeholder="Password">
+                                </div>
+                                <button class="btn btn-primary-custom btn-lg w-100 mb-3" onclick="loginUser()">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                                    Login
+                                </button>
+                                <div class="text-center">
+                                    <p class="text-muted mb-0">Don't have an account? 
+                                        <a href="#" class="text-decoration-none fw-bold link-primary-custom" onclick="showTab('signup'); return false;">Sign Up</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div style="background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
-                        <p style="font-weight: 600; margin-bottom: 10px; color: #343a40;">Expected Excel Format:</p>
-                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
-                            <thead>
-                                <tr style="background-color: #e2e6ea;">
-                                    <th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Date</th>
-                                    <th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Subject</th>
-                                    <th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Time Slot</th>
-                                    <th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="padding: 8px; border: 1px solid #dee2e6;">2024-03-15</td>
-                                    <td style="padding: 8px; border: 1px solid #dee2e6;">Math</td>
-                                    <td style="padding: 8px; border: 1px solid #dee2e6;">09:00-10:00</td>
-                                    <td style="padding: 8px; border: 1px solid #dee2e6;">present</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <p style="font-size: 0.9em; color: #6c757d;">Ensure 'Status' is either 'present' or 'absent'.</p>
+
+                    <!-- Signup Tab -->
+                    <div id="signup" class="tab-content-panel">
+                        <div class="auth-card">
+                            <div class="auth-header">
+                                <i class="bi bi-person-plus-fill" style="font-size: 3rem;"></i>
+                                <h2 class="mt-3 mb-0">Create Account</h2>
+                                <p class="mb-0 opacity-75">Join Ordinare today</p>
+                            </div>
+                            <div class="p-4">
+                                <div class="mb-3 position-relative">
+                                    <i class="bi bi-person-fill input-icon"></i>
+                                    <input type="text" id="signupUsername" class="form-control form-control-lg form-control-icon" placeholder="Choose Username">
+                                </div>
+                                <div class="mb-4 position-relative">
+                                    <i class="bi bi-lock-fill input-icon"></i>
+                                    <input type="password" id="signupPassword" class="form-control form-control-lg form-control-icon" placeholder="Create Password">
+                                </div>
+                                <button class="btn btn-primary-custom btn-lg w-100 mb-3" onclick="signupUser()">
+                                    <i class="bi bi-person-plus me-2"></i>
+                                    Create Account
+                                </button>
+                                <div class="text-center">
+                                    <p class="text-muted mb-0">Already have an account? 
+                                        <a href="#" class="text-decoration-none fw-bold link-primary-custom" onclick="showTab('login'); return false;">Login</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <button class="btn" onclick="uploadAttendanceFile()">Upload File</button>
-                    <div id="uploadMessage" style="margin-top: 20px; color: green;"></div>
+
+                    <!-- Dashboard Tab -->
+                    <div id="dashboard" class="tab-content-panel active">
+                        <div class="page-header">
+                            <h2 class="mb-0">
+                                <i class="bi bi-speedometer2 me-2 text-primary-custom"></i>
+                                Dashboard Overview
+                            </h2>
+                        </div>
+
+                        <div class="coming-soon-card">
+                            <i class="bi bi-rocket-takeoff coming-soon-icon"></i>
+                            <h3 class="mt-3 mb-3">Dashboard Coming Soon!</h3>
+                            <p class="text-muted mb-4 lead">We're building an amazing dashboard with real-time analytics, quick actions, and personalized insights just for you.</p>
+                            <div class="row g-3 text-start">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-check-circle-fill text-success me-2 mt-1 fs-5"></i>
+                                        <div>
+                                            <strong>Quick Stats</strong>
+                                            <p class="text-muted small mb-0">View all important metrics at a glance</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-check-circle-fill text-success me-2 mt-1 fs-5"></i>
+                                        <div>
+                                            <strong>Recent Activity</strong>
+                                            <p class="text-muted small mb-0">Track your latest attendance & study sessions</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-check-circle-fill text-success me-2 mt-1 fs-5"></i>
+                                        <div>
+                                            <strong>Performance Trends</strong>
+                                            <p class="text-muted small mb-0">Beautiful charts showing your progress</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-check-circle-fill text-success me-2 mt-1 fs-5"></i>
+                                        <div>
+                                            <strong>Smart Alerts</strong>
+                                            <p class="text-muted small mb-0">Get notified about low attendance & deadlines</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Setup Tab -->
+                    <div id="setup" class="tab-content-panel">
+                        <div class="page-header">
+                            <h2 class="mb-0">
+                                <i class="bi bi-gear-fill me-2 text-primary-custom"></i>
+                                Initial Setup
+                            </h2>
+                            <p class="text-muted mt-2 mb-0">Configure your semester details and subjects</p>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-10 mx-auto">
+                                <div class="glass-card p-4 mb-4">
+                                    <h5 class="mb-3 fw-bold">
+                                        <i class="bi bi-person-badge me-2 text-primary-custom"></i>
+                                        Personal Information
+                                    </h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Student Name</label>
+                                            <input type="text" id="studentName" class="form-control" placeholder="Enter your full name">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">University Roll No</label>
+                                            <input type="text" id="universityRollNo" class="form-control" placeholder="Enter roll number">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Semester Name</label>
+                                            <input type="text" id="semesterName" class="form-control" placeholder="e.g., Fall 2024">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Number of Subjects</label>
+                                            <input type="number" id="numSubjects" class="form-control" min="1" max="10" value="5">
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary-custom mt-3" onclick="generateSubjectInputs()">
+                                        <i class="bi bi-plus-circle me-2"></i>
+                                        Generate Subject Fields
+                                    </button>
+                                </div>
+
+                                <div id="subjectInputsContainer" class="d-none">
+                                    <div class="glass-card p-4">
+                                        <h5 class="mb-3 fw-bold">
+                                            <i class="bi bi-journal-text me-2 text-primary-custom"></i>
+                                            Subject Details
+                                        </h5>
+                                        <div id="subjectInputs"></div>
+                                        <button class="btn btn-success btn-lg w-100 mt-3" onclick="saveSubjects()">
+                                            <i class="bi bi-check-circle me-2"></i>
+                                            Save All Information
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="setupComplete" class="alert alert-success mt-4 d-none">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    <strong>Setup completed successfully!</strong> You can now create your timetable.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timetable Tab -->
+                    <div id="timetable" class="tab-content-panel">
+                        <div class="page-header">
+                            <h2 class="mb-0">
+                                <i class="bi bi-calendar-week me-2 text-primary-custom"></i>
+                                Weekly Timetable
+                            </h2>
+                            <p class="text-muted mt-2 mb-0">Manage your class schedule</p>
+                        </div>
+                        <div id="timetableContainer"></div>
+                        <button class="btn btn-success mt-3" onclick="saveTimetable()" id="saveTimetableBtn">
+                            <i class="bi bi-save me-2"></i>
+                            Save Timetable
+                        </button>
+                    </div>
+
+                    <!-- Mark Attendance Tab -->
+                    <div id="attendance" class="tab-content-panel">
+                        <div class="page-header">
+                            <h2 class="mb-0">
+                                <i class="bi bi-check2-square me-2 text-primary-custom"></i>
+                                Mark Today's Attendance
+                            </h2>
+                            <p class="text-muted mt-2 mb-0">Track your class attendance</p>
+                        </div>
+                        <div id="attendanceContainer"></div>
+                    </div>
+
+                    <!-- Subject-wise Tab -->
+                    <div id="subjectwise" class="tab-content-panel">
+                        <div class="page-header">
+                            <h2 class="mb-0">
+                                <i class="bi bi-journals me-2 text-primary-custom"></i>
+                                Subject-wise Attendance
+                            </h2>
+                            <p class="text-muted mt-2 mb-0">View detailed attendance for each subject</p>
+                        </div>
+                        <div id="subjectWiseAttendanceContent"></div>
+                    </div>
+
+                    <!-- Analytics/Bunk Calculator Tab -->
+                    <div id="analytics" class="tab-content-panel">
+                        <div class="page-header">
+                            <h2 class="mb-0">
+                                <i class="bi bi-calculator me-2 text-primary-custom"></i>
+                                Bunk Calculator & Analytics
+                            </h2>
+                            <p class="text-muted mt-2 mb-0">Calculate safe bunks and view statistics</p>
+                        </div>
+                        
+                        <div class="row g-4">
+                            <div class="col-lg-6">
+                                <div class="glass-card p-4">
+                                    <h5 class="fw-bold mb-3">
+                                        <i class="bi bi-graph-up me-2"></i>
+                                        Overall Statistics
+                                    </h5>
+                                    <div id="overallAttendanceDisplay" class="display-6 text-primary-custom">
+                                        Loading...
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="glass-card p-4">
+                                    <h5 class="fw-bold mb-3">
+                                        <i class="bi bi-calculator me-2"></i>
+                                        Calculate Safe Bunks
+                                    </h5>
+                                    <label class="form-label">Target Attendance %</label>
+                                    <input type="number" id="targetPercentage" class="form-control mb-3" value="75" min="0" max="100">
+                                    <button class="btn btn-primary-custom w-100" onclick="calculateBunks()">
+                                        <i class="bi bi-magic me-2"></i>
+                                        Calculate
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="bunkResults" class="mt-4"></div>
+
+                        <div class="glass-card p-4 mt-4">
+                            <h5 class="fw-bold mb-3">
+                                <i class="bi bi-bar-chart-fill me-2"></i>
+                                Attendance Visualization
+                            </h5>
+                            <div id="attendancePlotDisplay"></div>
+                        </div>
+                    </div>
+
+                    <!-- Score Prediction Tab -->
+                    <div id="scorePrediction" class="tab-content-panel">
+                        <div class="page-header">
+                            <h2 class="mb-0">
+                                <i class="bi bi-graph-up-arrow me-2 text-primary-custom"></i>
+                                Score Prediction System
+                            </h2>
+                        </div>
+
+                        <div class="coming-soon-card">
+                            <i class="bi bi-trophy coming-soon-icon"></i>
+                            <h3 class="mt-3 mb-3">Score Prediction Coming Soon!</h3>
+                            <p class="text-muted mb-4 lead">An intelligent rule-based system to predict your required scores and help you achieve your academic goals.</p>
+                            <div class="row g-3 text-start">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-lightbulb-fill text-warning me-2 mt-1 fs-5"></i>
+                                        <div>
+                                            <strong>CGPA Calculator</strong>
+                                            <p class="text-muted small mb-0">Calculate and track your semester & cumulative GPA</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-lightbulb-fill text-warning me-2 mt-1 fs-5"></i>
+                                        <div>
+                                            <strong>Target Score Analyzer</strong>
+                                            <p class="text-muted small mb-0">Find out what scores you need to reach your target</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-lightbulb-fill text-warning me-2 mt-1 fs-5"></i>
+                                        <div>
+                                            <strong>Grade Predictor</strong>
+                                            <p class="text-muted small mb-0">Estimate final grades based on current performance</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-lightbulb-fill text-warning me-2 mt-1 fs-5"></i>
+                                        <div>
+                                            <strong>What-If Scenarios</strong>
+                                            <p class="text-muted small mb-0">See how different scores affect your overall performance</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Study Tracker Tab -->
+                    <div id="studyTracker" class="tab-content-panel">
+                        <div class="page-header">
+                            <h2 class="mb-0">
+                                <i class="bi bi-clock-history me-2 text-primary-custom"></i>
+                                Study Session Tracker
+                            </h2>
+                        </div>
+
+                        <div class="coming-soon-card">
+                            <i class="bi bi-book coming-soon-icon"></i>
+                            <h3 class="mt-3 mb-3">Study Tracker Coming Soon!</h3>
+                            <p class="text-muted mb-4 lead">Track your study hours, maintain focus, and boost productivity with our comprehensive study session tracker.</p>
+                            <div class="row g-3 text-start">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-stopwatch-fill text-info me-2 mt-1 fs-5"></i>
+                                        <div>
+                                            <strong>Session Timer</strong>
+                                            <p class="text-muted small mb-0">Built-in Pomodoro timer for focused study sessions</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-stopwatch-fill text-info me-2 mt-1 fs-5"></i>
+                                        <div>
+                                            <strong>Subject-wise Tracking</strong>
+                                            <p class="text-muted small mb-0">Track time spent on each subject separately</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-stopwatch-fill text-info me-2 mt-1 fs-5"></i>
+                                        <div>
+                                            <strong>Goal Setting</strong>
+                                            <p class="text-muted small mb-0">Set daily/weekly study goals and track progress</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-stopwatch-fill text-info me-2 mt-1 fs-5"></i>
+                                        <div>
+                                            <strong>Analytics & Insights</strong>
+                                            <p class="text-muted small mb-0">Visual reports of your study patterns</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Tab -->
+                    <div id="profile" class="tab-content-panel">
+                        <div class="page-header">
+                            <h2 class="mb-0">
+                                <i class="bi bi-person-circle me-2 text-primary-custom"></i>
+                                Profile & Settings
+                            </h2>
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-lg-8">
+                                <div class="glass-card p-4">
+                                    <h5 class="fw-bold mb-3">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Personal Information
+                                    </h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="text-muted small">Username</label>
+                                            <div class="fw-bold" id="profileUsername">-</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="text-muted small">Student Name</label>
+                                            <div class="fw-bold" id="profileStudentName">-</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="text-muted small">Roll Number</label>
+                                            <div class="fw-bold" id="profileRollNo">-</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="text-muted small">Semester</label>
+                                            <div class="fw-bold" id="profileSemester">-</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="text-muted small">Total Subjects</label>
+                                            <div class="fw-bold" id="profileSubjects">-</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="text-muted small">Overall Attendance</label>
+                                            <div class="fw-bold" id="profileAttendance">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="glass-card p-4">
+                                    <h5 class="fw-bold mb-3">
+                                        <i class="bi bi-gear me-2"></i>
+                                        Actions
+                                    </h5>
+                                    <button class="btn btn-outline-danger w-100 mb-2" onclick="logout()">
+                                        <i class="bi bi-box-arrow-left me-2"></i>
+                                        Logout
+                                    </button>
+                                    <button class="btn btn-danger w-100" onclick="clearAllData()">
+                                        <i class="bi bi-trash me-2"></i>
+                                        Clear All Data
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Tab -->
+                    <div id="upload" class="tab-content-panel">
+                        <div class="page-header">
+                            <h2 class="mb-0">
+                                <i class="bi bi-cloud-upload me-2 text-primary-custom"></i>
+                                Upload Attendance File
+                            </h2>
+                            <p class="text-muted mt-2 mb-0">Import attendance data from Excel</p>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-8 mx-auto">
+                                <div class="glass-card p-4 mb-4">
+                                    <h5 class="fw-bold mb-3">
+                                        <i class="bi bi-file-earmark-excel me-2"></i>
+                                        Select Excel File
+                                    </h5>
+                                    <input type="file" id="attendanceFile" class="form-control mb-3" accept=".xlsx,.xls">
+                                    <button class="btn btn-success w-100" onclick="uploadAttendanceFile()">
+                                        <i class="bi bi-upload me-2"></i>
+                                        Upload File
+                                    </button>
+                                    <div id="uploadMessage" class="mt-3"></div>
+                                </div>
+
+                                <div class="glass-card p-4">
+                                    <h5 class="fw-bold mb-3">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Expected Format
+                                    </h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Subject</th>
+                                                    <th>Time Slot</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><code>YYYY-MM-DD</code></td>
+                                                    <td>Subject Name</td>
+                                                    <td><code>HH:MM-HH:MM</code></td>
+                                                    <td><code>present</code> / <code>absent</code></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><code>2024-01-15</code></td>
+                                                    <td>Mathematics</td>
+                                                    <td><code>9:00-10:00</code></td>
+                                                    <td><code>present</code></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="developerInfo" style="position: fixed; bottom: 10px; right: 10px; font-size: 0.95rem; color: rgba(255, 255, 255, 0.7); display: none;">
-        Made by Ayeman Singh
-    </div>
-
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="{{ url_for('static', filename='js/enhanced_script.js') }}"></script>
 </body>
 </html>

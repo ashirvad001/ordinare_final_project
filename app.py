@@ -1,6 +1,4 @@
-# app.py
-
-# app.py
+# app.py - Updated with Study Tracker Support
 
 import os
 import json
@@ -8,7 +6,7 @@ import base64
 from io import BytesIO
 import pandas as pd
 import matplotlib
-matplotlib.use('Agg')  # Use a non-interactive backend
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from flask import Flask, request, jsonify, render_template, session
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -16,9 +14,9 @@ from datetime import datetime
 
 # --- App Configuration ---
 app = Flask(__name__)
-# IMPORTANT: Change this secret key for production
-app.secret_key = 'your_very_secret_key_for_sessions'
-# Directory to store user data files (our simple JSON database)
+# IMPORTANT: Use environment variable in production
+app.secret_key = os.environ.get('SECRET_KEY', 'your_very_secret_key_for_sessions')
+# Directory to store user data files
 DATA_DIR = 'user_data'
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
@@ -52,10 +50,20 @@ def signup():
     # Create a new user file with hashed password
     default_data = {
         'password': generate_password_hash(password),
-        'app_data': {}
+        'app_data': {
+            'subjects': [],
+            'timetable': {},
+            'attendanceData': {},
+            'timeSlots': ['9:00-10:00', '10:00-11:00', '11:00-12:00', '12:00-1:00',
+                         '1:00-2:00', '2:00-3:00', '3:00-4:00', '4:00-5:00'],
+            'studentName': '',
+            'universityRollNo': '',
+            'studySessions': [],
+            'studyGoals': {'daily': 2, 'weekly': 14}
+        }
     }
     with open(user_file, 'w') as f:
-        json.dump(default_data, f)
+        json.dump(default_data, f, indent=4)
     
     return jsonify({'success': True})
 
@@ -104,9 +112,9 @@ def save_data():
         with open(user_file, 'r') as f:
             user_data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        # If file doesn't exist or is corrupt, start fresh but keep password
-        user_data = {'password': ''} # This should be handled better in a real app
+        user_data = {'password': ''}
 
+    # Update app_data with the new data
     user_data['app_data'] = request.json
     
     with open(user_file, 'w') as f:
@@ -127,8 +135,15 @@ def get_data():
 
     with open(user_file, 'r') as f:
         user_data = json.load(f)
+    
+    # Ensure study tracker fields exist
+    app_data = user_data.get('app_data', {})
+    if 'studySessions' not in app_data:
+        app_data['studySessions'] = []
+    if 'studyGoals' not in app_data:
+        app_data['studyGoals'] = {'daily': 2, 'weekly': 14}
         
-    return jsonify({'success': True, 'data': user_data.get('app_data', {})})
+    return jsonify({'success': True, 'data': app_data})
 
 @app.route('/clear_data', methods=['POST'])
 def clear_data():
@@ -142,7 +157,18 @@ def clear_data():
         with open(user_file, 'r') as f:
             user_data = json.load(f)
         
-        user_data['app_data'] = {}  # Clear the app_data field
+        # Clear all app_data except password
+        user_data['app_data'] = {
+            'subjects': [],
+            'timetable': {},
+            'attendanceData': {},
+            'timeSlots': ['9:00-10:00', '10:00-11:00', '11:00-12:00', '12:00-1:00',
+                         '1:00-2:00', '2:00-3:00', '3:00-4:00', '4:00-5:00'],
+            'studentName': '',
+            'universityRollNo': '',
+            'studySessions': [],
+            'studyGoals': {'daily': 2, 'weekly': 14}
+        }
         
         with open(user_file, 'w') as f:
             json.dump(user_data, f, indent=4)
@@ -171,7 +197,7 @@ def upload_attendance():
         subjects = app_data.get('subjects', [])
         attendance_data = app_data.get('attendanceData', {})
         
-        # Create a map of subject name to subject ID for easy lookup
+        # Create a map of subject name to subject ID
         subject_name_to_id = {subj['name'].lower(): str(subj['id']) for subj in subjects}
         
         records_added = 0
@@ -183,17 +209,15 @@ def upload_attendance():
             status = str(row.get('Status', '')).lower()
             
             if not all([subject_name, date_str, time_slot, status in ['present', 'absent']]):
-                continue # Skip rows with incomplete data
+                continue
 
             subject_id = subject_name_to_id.get(subject_name)
             if not subject_id:
-                continue # Skip if subject from Excel isn't in user's subject list
+                continue
 
-            # Ensure attendance data structure exists for the subject
             if subject_id not in attendance_data:
                 attendance_data[subject_id] = {'total': 0, 'attended': 0, 'records': []}
 
-            # Create a unique key to prevent duplicate entries
             record_key = f"{subject_id}-{date_str}-{time_slot}"
             existing_keys = [rec['key'] for rec in attendance_data[subject_id].get('records', [])]
 
@@ -205,7 +229,6 @@ def upload_attendance():
                 attendance_data[subject_id]['records'].append({'key': record_key, 'status': status})
                 records_added += 1
 
-        # Save the updated data
         user_data['app_data']['attendanceData'] = attendance_data
         with open(user_file, 'w') as f:
             json.dump(user_data, f, indent=4)
@@ -214,7 +237,6 @@ def upload_attendance():
 
     except Exception as e:
         return jsonify({'success': False, 'message': f'An error occurred: {str(e)}'})
-
 
 @app.route('/get_attendance_plot')
 def get_attendance_plot():
@@ -246,21 +268,32 @@ def get_attendance_plot():
         percentage = (attended / total * 100) if total > 0 else 0
         percentages.append(percentage)
 
+    # Create the plot
     fig, ax = plt.subplots(figsize=(10, 6))
-    bars = ax.bar(subject_names, percentages, color='#006b2f')
-    ax.set_ylabel('Attendance Percentage (%)')
-    ax.set_title('Subject-wise Attendance Percentage')
+    bars = ax.bar(subject_names, percentages, color='#006b2f', edgecolor='#004d26', linewidth=2)
+    
+    # Customize the plot
+    ax.set_ylabel('Attendance Percentage (%)', fontsize=12, fontweight='bold')
+    ax.set_title('Subject-wise Attendance Percentage', fontsize=14, fontweight='bold', pad=20)
     ax.set_ylim(0, 105)
+    ax.grid(axis='y', alpha=0.3, linestyle='--')
+    ax.set_axisbelow(True)
+    
     plt.xticks(rotation=45, ha='right')
 
+    # Add percentage labels on top of bars
     for bar in bars:
         yval = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2.0, yval + 1, f'{yval:.1f}%', ha='center', va='bottom')
+        ax.text(bar.get_x() + bar.get_width()/2.0, yval + 1, 
+                f'{yval:.1f}%', ha='center', va='bottom', fontweight='bold')
 
     plt.tight_layout()
 
+    # Save to buffer
     buf = BytesIO()
-    fig.savefig(buf, format="png")
+    fig.savefig(buf, format="png", dpi=100, bbox_inches='tight')
+    plt.close(fig)
+    
     image_data = base64.b64encode(buf.getbuffer()).decode("ascii")
     
     return jsonify({'success': True, 'image': image_data})
@@ -274,3 +307,4 @@ if __name__ == '__main__':
 # matplotlib
 # flask
 # werkzeug
+# openpyxl (for Excel file support)

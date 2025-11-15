@@ -1,0 +1,97 @@
+{
+    "password": "scrypt:32768:8:1$GorQPZPTBlAFRUEw$fd1d564351f017839494f7d35d80ccebbd7e6aba40abb1542a710be70c6b929c8ffe53b1c8a21d07fd5daa21389c72c4a438442026d1d5f52010c295bf6d82c4",
+    "app_data": {
+        "subjects": [
+            {
+                "id": 0,
+                "name": "DBMS"
+            },
+            {
+                "id": 1,
+                "name": "DAA"
+            },
+            {
+                "id": 2,
+                "name": "DA"
+            },
+            {
+                "id": 3,
+                "name": "COI"
+            },
+            {
+                "id": 4,
+                "name": "WT"
+            }
+        ],
+        "timetable": {
+            "Monday-9:00-10:00": 1,
+            "Thursday-12:00-1:00": 3,
+            "Thursday-9:00-10:00": 2,
+            "Friday-9:00-10:00": 1,
+            "Friday-12:00-1:00": 1,
+            "Friday-2:00-3:00": 2,
+            "Friday-3:00-4:00": 4
+        },
+        "attendanceData": {
+            "1": {
+                "total": 2,
+                "attended": 1,
+                "records": [
+                    {
+                        "key": "1-2025-11-14-9:00-10:00",
+                        "status": "present"
+                    },
+                    {
+                        "key": "1-2025-11-14-12:00-1:00",
+                        "status": "absent"
+                    }
+                ]
+            },
+            "2": {
+                "attended": 2,
+                "records": [
+                    {
+                        "key": "2-2025-11-13-9:00-10:00",
+                        "status": "present"
+                    },
+                    {
+                        "key": "2-2025-11-14-2:00-3:00",
+                        "status": "present"
+                    }
+                ],
+                "total": 2
+            },
+            "3": {
+                "attended": 1,
+                "records": [
+                    {
+                        "key": "3-2025-11-13-12:00-1:00",
+                        "status": "present"
+                    }
+                ],
+                "total": 1
+            },
+            "4": {
+                "total": 1,
+                "attended": 1,
+                "records": [
+                    {
+                        "key": "4-2025-11-14-3:00-4:00",
+                        "status": "present"
+                    }
+                ]
+            }
+        },
+        "timeSlots": [
+            "9:00-10:00",
+            "10:00-11:00",
+            "12:00-1:00",
+            "1:00-2:00",
+            "2:00-3:00",
+            "3:00-4:00",
+            "4:00-5:00"
+        ],
+        "studentName": "Ashirvad kumar singh",
+        "universityRollNo": "2301430120042"
+    }
+}
