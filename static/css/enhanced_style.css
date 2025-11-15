@@ -832,3 +832,62 @@ canvas {
     display: block;
     box-sizing: border-box;
 }
+
+/* Payment Modal Styling */
+.payment-method-card {
+    transition: all 0.3s ease;
+    border: 2px solid #dee2e6 !important;
+}
+
+.payment-method-card:hover {
+    border-color: var(--primary-color) !important;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.payment-method-card.border-primary {
+    background: rgba(0, 107, 47, 0.05);
+}
+
+#paymentModal .modal-content {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+#paymentModal .modal-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-radius: 16px 16px 0 0;
+}
+
+#paymentModal .modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+#qrCodeSection svg {
+    border: 3px solid #e9ecef;
+    border-radius: 8px;
+}
+
+#payBtn {
+    font-size: 1.1rem;
+    padding: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+#paymentSuccess i {
+    animation: scaleIn 0.5s ease;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

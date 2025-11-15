@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Time Optimizer - Ordinare</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .optimizer-container { max-width: 1200px; margin: 0 auto; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .header-card {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        .subject-card {
+            border-left: 5px solid;
+            transition: all 0.3s ease;
+        }
+        .subject-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        .priority-high { border-left-color: #e74c3c; }
+        .priority-medium { border-left-color: #f39c12; }
+        .priority-low { border-left-color: #27ae60; }
+        .stat-box {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .insight-item {
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+        }
+        .insight-danger { background: #fee; border-left: 3px solid #e74c3c; }
+        .insight-warning { background: #fef5e7; border-left: 3px solid #f39c12; }
+        .insight-success { background: #eafaf1; border-left: 3px solid #27ae60; }
+        .insight-info { background: #ebf5fb; border-left: 3px solid #3498db; }
+        .schedule-day {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .schedule-item {
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="optimizer-container">
+        <div class="glass-card header-card">
+            <i class="bi bi-clock-history" style="font-size: 3rem;"></i>
+            <h1 class="display-4 fw-bold mt-3 mb-2">Study Time Optimizer</h1>
+            <p class="lead mb-0">AI-Powered Study Plan Recommendations</p>
+            <p class="mt-2"><small>Using Random Forest ML Model</small></p>
+            <div class="mt-3">
+                <label class="text-white me-2">Days to Exam:</label>
+                <input type="number" id="daysToExam" class="form-control d-inline-block" style="width: 100px;" value="30" min="1" max="90">
+                <button class="btn btn-light ms-2" onclick="loadOptimization()">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Recalculate
+                </button>
+            </div>
+        </div>
+
+        <div id="loadingSpinner" class="text-center">
+            <div class="spinner-border text-light" style="width: 3rem; height: 3rem;"></div>
+            <p class="text-white mt-3 fw-bold">Optimizing study plan...</p>
+        </div>
+
+        <div id="optimizerResults" style="display: none;">
+            <div class="glass-card">
+                <h4 class="fw-bold mb-3">
+                    <i class="bi bi-bar-chart me-2"></i>
+                    Study Plan Overview
+                </h4>
+                <div class="row g-3" id="overviewStats"></div>
+            </div>
+
+            <div id="subjectRecommendations"></div>
+
+            <div class="glass-card">
+                <h4 class="fw-bold mb-3">
+                    <i class="bi bi-calendar-week me-2"></i>
+                    Suggested Weekly Schedule
+                </h4>
+                <div id="weeklySchedule"></div>
+            </div>
+
+            <div class="glass-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-0">
+                            <i class="bi bi-info-circle me-2"></i>
+                            How Recommendations Work
+                        </h5>
+                    </div>
+                    <a href="/dashboard" class="btn btn-primary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+                <hr>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="bi bi-speedometer text-primary" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Difficulty</h6>
+                            <small class="text-muted">Subject complexity</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="bi bi-graph-up text-success" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Performance</h6>
+                            <small class="text-muted">Current grade</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="bi bi-calendar-check text-warning" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Attendance</h6>
+                            <small class="text-muted">Class participation</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="bi bi-robot text-danger" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">ML Model</h6>
+                            <small class="text-muted">AI optimization</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function loadOptimization() {
+            const daysToExam = document.getElementById('daysToExam').value;
+            
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('optimizerResults').style.display = 'none';
+
+            try {
+                const response = await fetch(`/api/study_optimizer?days_to_exam=${daysToExam}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    displayResults(result.recommendations, result.schedule);
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load optimization');
+            }
+        }
+
+        function displayResults(recommendations, schedule) {
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('optimizerResults').style.display = 'block';
+
+            // Overview stats
+            const totalHours = recommendations.reduce((sum, r) => sum + r.recommended_total_hours, 0);
+            const avgDaily = recommendations.reduce((sum, r) => sum + r.daily_hours, 0);
+            const highPriority = recommendations.filter(r => r.priority === 'High').length;
+
+            document.getElementById('overviewStats').innerHTML = `
+                <div class="col-md-3">
+                    <div class="stat-box">
+                        <h3 class="fw-bold text-primary">${totalHours.toFixed(1)}h</h3>
+                        <small>Total Study Hours</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-box">
+                        <h3 class="fw-bold text-success">${avgDaily.toFixed(1)}h</h3>
+                        <small>Daily Study Time</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-box">
+                        <h3 class="fw-bold text-warning">${recommendations.length}</h3>
+                        <small>Subjects</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-box">
+                        <h3 class="fw-bold text-danger">${highPriority}</h3>
+                        <small>High Priority</small>
+                    </div>
+                </div>
+            `;
+
+            // Subject recommendations
+            const container = document.getElementById('subjectRecommendations');
+            container.innerHTML = '';
+
+            recommendations.forEach(rec => {
+                container.innerHTML += `
+                    <div class="glass-card subject-card priority-${rec.priority.toLowerCase()}">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h4 class="fw-bold mb-1">${rec.subject_name}</h4>
+                                <small class="text-muted">
+                                    Difficulty: ${rec.difficulty}/10 | Attendance: ${rec.attendance_pct}%
+                                </small>
+                            </div>
+                            <span class="badge bg-${rec.priority_color}" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                                ${rec.priority} Priority
+                            </span>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-3">
+                                <div class="stat-box">
+                                    <h5 class="fw-bold">${rec.recommended_total_hours}h</h5>
+                                    <small>Total Hours</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-box">
+                                    <h5 class="fw-bold">${rec.weekly_hours}h</h5>
+                                    <small>Per Week</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-box">
+                                    <h5 class="fw-bold">${rec.daily_hours}h</h5>
+                                    <small>Per Day</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-box">
+                                    <h5 class="fw-bold">${rec.total_study_hours}h</h5>
+                                    <small>Studied So Far</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold mb-2">
+                            <i class="bi bi-lightbulb me-2"></i>
+                            AI Insights
+                        </h6>
+                        ${rec.insights.map(insight => `
+                            <div class="insight-item insight-${insight.type}">
+                                <i class="bi bi-${insight.icon} me-2"></i>
+                                ${insight.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            });
+
+            // Weekly schedule
+            const scheduleContainer = document.getElementById('weeklySchedule');
+            scheduleContainer.innerHTML = '';
+
+            Object.entries(schedule).forEach(([day, sessions]) => {
+                const totalHours = sessions.reduce((sum, s) => sum + s.hours, 0);
+                
+                scheduleContainer.innerHTML += `
+                    <div class="schedule-day">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold mb-0">${day}</h6>
+                            <span class="badge bg-primary">${totalHours.toFixed(1)}h total</span>
+                        </div>
+                        ${sessions.length > 0 ? sessions.map(s => `
+                            <div class="schedule-item bg-${s.priority === 'High' ? 'danger' : s.priority === 'Medium' ? 'warning' : 'success'} bg-opacity-10">
+                                <i class="bi bi-book me-2"></i>
+                                ${s.subject} - ${s.hours}h
+                            </div>
+                        `).join('') : '<small class="text-muted">Rest day</small>'}
+                    </div>
+                `;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadOptimization);
+    </script>
+</body>
+</html>

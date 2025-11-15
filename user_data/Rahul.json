@@ -1,14 +1,15 @@
 {
-    "password": "scrypt:32768:8:1$DrGXhvkbICD4AgD8$1660948093e6288d303c02fae6c5e55f5d3db67b07eec889455171ae37ffc573a4383d94dbb0a09cfacd7195d6406e7711f85c2bc39424da1b0a03b376ee3822",
+    "email": "rahul@example.com",
+    "password": "scrypt:32768:8:1$KFStQOEmhvK02Gur$2833dcd6af8df010c0732745d567201fbc577140ccafb65bdc8feca231afea11133fc4c3bffa2b0c59ff73a990b4ca0b836a68d6f6a311e522f4c93004afa3aa",
     "app_data": {
         "subjects": [
             {
                 "id": 0,
-                "name": "DBMS"
+                "name": "DAA"
             },
             {
                 "id": 1,
-                "name": "DAA"
+                "name": "DBMS"
             },
             {
                 "id": 2,
@@ -24,43 +25,382 @@
             }
         ],
         "timetable": {
-            "Friday-11:00-12:00": 1,
-            "Friday-12:00-1:00": 1,
-            "Friday-1:00-2:00": 2,
-            "Monday-10:00-11:00": 1,
-            "Monday-11:00-12:00": 2,
-            "Monday-12:00-1:00": 3,
-            "Monday-1:00-2:00": 4,
-            "Monday-4:00-5:00": 4,
-            "Thursday-10:00-11:00": 2,
-            "Thursday-1:00-2:00": 4,
-            "Thursday-3:00-4:00": 4,
-            "Thursday-4:00-5:00": 1,
-            "Thursday-9:00-10:00": 2,
-            "Tuesday-11:00-12:00": 3,
-            "Tuesday-12:00-1:00": 2,
-            "Tuesday-1:00-2:00": 2,
-            "Tuesday-3:00-4:00": 3,
-            "Tuesday-4:00-5:00": 2,
-            "Tuesday-9:00-10:00": 1,
-            "Wednesday-11:00-12:00": 1,
-            "Wednesday-12:00-1:00": 2,
-            "Wednesday-1:00-2:00": 3,
-            "Wednesday-3:00-4:00": 4,
-            "Wednesday-4:00-5:00": 4
+            "Monday-9:00 AM-10:00 AM": 0,
+            "Monday-10:00 AM-11:00 AM": 1,
+            "Monday-11:00 AM-12:00 PM": 2,
+            "Tuesday-9:00 AM-10:00 AM": 3,
+            "Tuesday-10:00 AM-11:00 AM": 4,
+            "Tuesday-11:00 AM-12:00 PM": 0,
+            "Wednesday-9:00 AM-10:00 AM": 1,
+            "Wednesday-10:00 AM-11:00 AM": 2,
+            "Wednesday-11:00 AM-12:00 PM": 3,
+            "Thursday-9:00 AM-10:00 AM": 4,
+            "Thursday-10:00 AM-11:00 AM": 0,
+            "Thursday-11:00 AM-12:00 PM": 1,
+            "Friday-9:00 AM-10:00 AM": 2,
+            "Friday-10:00 AM-11:00 AM": 3,
+            "Friday-11:00 AM-12:00 PM": 4
         },
-        "attendanceData": {},
+        "attendanceData": {
+            "0": {
+                "total": 12,
+                "attended": 10,
+                "records": [
+                    {
+                        "key": "0-2024-11-06-9:00 AM-10:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "0-2024-11-07-11:00 AM-12:00 PM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "0-2024-11-08-10:00 AM-11:00 AM",
+                        "status": "absent"
+                    },
+                    {
+                        "key": "0-2024-11-11-9:00 AM-10:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "0-2024-11-12-11:00 AM-12:00 PM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "0-2024-11-13-10:00 AM-11:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "0-2024-11-14-9:00 AM-10:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "0-2024-11-15-11:00 AM-12:00 PM",
+                        "status": "absent"
+                    },
+                    {
+                        "key": "0-2024-11-18-9:00 AM-10:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "0-2024-11-19-11:00 AM-12:00 PM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "0-2024-11-20-10:00 AM-11:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "0-2024-11-21-9:00 AM-10:00 AM",
+                        "status": "present"
+                    }
+                ]
+            },
+            "1": {
+                "total": 10,
+                "attended": 7,
+                "records": [
+                    {
+                        "key": "1-2024-11-06-10:00 AM-11:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "1-2024-11-07-9:00 AM-10:00 AM",
+                        "status": "absent"
+                    },
+                    {
+                        "key": "1-2024-11-08-11:00 AM-12:00 PM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "1-2024-11-11-10:00 AM-11:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "1-2024-11-13-9:00 AM-10:00 AM",
+                        "status": "absent"
+                    },
+                    {
+                        "key": "1-2024-11-14-11:00 AM-12:00 PM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "1-2024-11-18-10:00 AM-11:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "1-2024-11-19-9:00 AM-10:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "1-2024-11-20-11:00 AM-12:00 PM",
+                        "status": "absent"
+                    },
+                    {
+                        "key": "1-2024-11-21-10:00 AM-11:00 AM",
+                        "status": "present"
+                    }
+                ]
+            },
+            "2": {
+                "total": 11,
+                "attended": 9,
+                "records": [
+                    {
+                        "key": "2-2024-11-06-11:00 AM-12:00 PM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "2-2024-11-07-10:00 AM-11:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "2-2024-11-08-9:00 AM-10:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "2-2024-11-11-11:00 AM-12:00 PM",
+                        "status": "absent"
+                    },
+                    {
+                        "key": "2-2024-11-13-10:00 AM-11:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "2-2024-11-14-9:00 AM-10:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "2-2024-11-18-11:00 AM-12:00 PM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "2-2024-11-19-10:00 AM-11:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "2-2024-11-20-9:00 AM-10:00 AM",
+                        "status": "absent"
+                    },
+                    {
+                        "key": "2-2024-11-21-11:00 AM-12:00 PM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "2-2024-11-22-10:00 AM-11:00 AM",
+                        "status": "present"
+                    }
+                ]
+            },
+            "3": {
+                "total": 10,
+                "attended": 9,
+                "records": [
+                    {
+                        "key": "3-2024-11-07-9:00 AM-10:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "3-2024-11-08-11:00 AM-12:00 PM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "3-2024-11-12-9:00 AM-10:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "3-2024-11-13-11:00 AM-12:00 PM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "3-2024-11-14-10:00 AM-11:00 AM",
+                        "status": "absent"
+                    },
+                    {
+                        "key": "3-2024-11-19-9:00 AM-10:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "3-2024-11-20-11:00 AM-12:00 PM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "3-2024-11-21-10:00 AM-11:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "3-2024-11-22-9:00 AM-10:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "3-2024-11-25-11:00 AM-12:00 PM",
+                        "status": "present"
+                    }
+                ]
+            },
+            "4": {
+                "total": 9,
+                "attended": 8,
+                "records": [
+                    {
+                        "key": "4-2024-11-07-10:00 AM-11:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "4-2024-11-08-9:00 AM-10:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "4-2024-11-12-11:00 AM-12:00 PM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "4-2024-11-14-9:00 AM-10:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "4-2024-11-15-11:00 AM-12:00 PM",
+                        "status": "absent"
+                    },
+                    {
+                        "key": "4-2024-11-19-10:00 AM-11:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "4-2024-11-21-9:00 AM-10:00 AM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "4-2024-11-22-11:00 AM-12:00 PM",
+                        "status": "present"
+                    },
+                    {
+                        "key": "4-2024-11-25-10:00 AM-11:00 AM",
+                        "status": "present"
+                    }
+                ]
+            }
+        },
         "timeSlots": [
-            "9:00-10:00",
-            "10:00-11:00",
-            "11:00-12:00",
-            "12:00-1:00",
-            "1:00-2:00",
-            "2:00-3:00",
-            "3:00-4:00",
-            "4:00-5:00"
+            "9:00 AM-10:00 AM",
+            "10:00 AM-11:00 AM",
+            "11:00 AM-12:00 PM",
+            "12:00 PM-1:00 PM",
+            "1:00 PM-2:00 PM",
+            "2:00 PM-3:00 PM",
+            "3:00 PM-4:00 PM",
+            "4:00 PM-5:00 PM"
         ],
         "studentName": "Rahul Kumar",
-        "universityRollNo": "2301430120001"
-    }
+        "universityRollNo": "2021CS001",
+        "studySessions": [
+            {
+                "subject": "0",
+                "date": "16/01/2025",
+                "duration": 30
+            },
+            {
+                "subject": "1",
+                "date": "16/01/2025",
+                "duration": 25
+            },
+            {
+                "subject": "2",
+                "date": "17/01/2025",
+                "duration": 45
+            },
+            {
+                "subject": "3",
+                "date": "17/01/2025",
+                "duration": 30
+            },
+            {
+                "subject": "0",
+                "date": "18/01/2025",
+                "duration": 40
+            },
+            {
+                "subject": "4",
+                "date": "18/01/2025",
+                "duration": 35
+            },
+            {
+                "subject": "1",
+                "date": "19/01/2025",
+                "duration": 25
+            },
+            {
+                "subject": "2",
+                "date": "19/01/2025",
+                "duration": 50
+            },
+            {
+                "subject": "3",
+                "date": "20/01/2025",
+                "duration": 30
+            },
+            {
+                "subject": "4",
+                "date": "20/01/2025",
+                "duration": 45
+            },
+            {
+                "subject": "0",
+                "date": "21/01/2025",
+                "duration": 35
+            },
+            {
+                "subject": "1",
+                "date": "21/01/2025",
+                "duration": 30
+            },
+            {
+                "subject": "2",
+                "date": "22/01/2025",
+                "duration": 40
+            },
+            {
+                "subject": "3",
+                "date": "22/01/2025",
+                "duration": 25
+            },
+            {
+                "subject": "4",
+                "date": "23/01/2025",
+                "duration": 50
+            },
+            {
+                "subject": "0",
+                "date": "23/01/2025",
+                "duration": 30
+            },
+            {
+                "subject": "1",
+                "date": "24/01/2025",
+                "duration": 45
+            },
+            {
+                "subject": "2",
+                "date": "24/01/2025",
+                "duration": 35
+            },
+            {
+                "subject": "3",
+                "date": "25/01/2025",
+                "duration": 30
+            },
+            {
+                "subject": "4",
+                "date": "25/01/2025",
+                "duration": 40
+            }
+        ],
+        "studyGoals": {
+            "daily": 2,
+            "weekly": 14
+        }
+    },
+    "premium": false,
+    "premium_expiry": null,
+    "payment_id": "DEMO_20251116024508"
 }

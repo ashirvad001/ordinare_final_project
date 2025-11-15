@@ -3,14 +3,15 @@ let subjects = [];
 let timetable = {};
 let attendanceData = {};
 let timeSlots = [
-    '9:00-10:00', '10:00-11:00', '11:00-12:00', '12:00-1:00',
-    '1:00-2:00', '2:00-3:00', '3:00-4:00', '4:00-5:00'
+    '9:00 AM-10:00 AM', '10:00 AM-11:00 AM', '11:00 AM-12:00 PM', '12:00 PM-1:00 PM',
+    '1:00 PM-2:00 PM', '2:00 PM-3:00 PM', '3:00 PM-4:00 PM', '4:00 PM-5:00 PM'
 ];
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
 let currentUsername = null;
 let studentName = '';
 let universityRollNo = '';
+let userEmail = '';
 let attendanceChart = null;
 
 // Initialize on page load
@@ -255,6 +256,21 @@ async function loadData() {
             timeSlots = result.data.timeSlots || timeSlots;
             studentName = result.data.studentName || '';
             universityRollNo = result.data.universityRollNo || '';
+            userEmail = result.data.email || '';
+            
+            // Load study sessions from server if available
+            if (result.data.studySessions && result.data.studySessions.length > 0) {
+                const localKey = `studyData_${currentUsername}`;
+                const localData = localStorage.getItem(localKey);
+                
+                if (!localData) {
+                    // First time loading, use server data
+                    studyData.sessions = result.data.studySessions;
+                    studyData.dailyGoal = result.data.studyGoals?.daily || 2;
+                    studyData.weeklyGoal = result.data.studyGoals?.weekly || 14;
+                    localStorage.setItem(localKey, JSON.stringify(studyData));
+                }
+            }
         }
     } catch (error) {
         console.error('Error loading data:', error);
@@ -268,7 +284,7 @@ function generateSubjectInputs() {
     const subjectContainer = document.getElementById('subjectInputsContainer');
     
     if (!numSubjects || numSubjects < 1 || numSubjects > 10) {
-        showAlert('Please enter a valid number of subjects (1-10)', 'warning');
+        showAlert('Please enter a valid number between 1 and 10', 'warning');
         return;
     }
     
@@ -354,7 +370,31 @@ function generateTimetableGrid() {
         return;
     }
     
-    let html = '<div class="timetable-grid">';
+    let html = `
+        <div class="glass-card p-3 mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-clock me-2"></i>Time Slot Configuration</h6>
+                <button class="btn btn-sm btn-primary" onclick="showTimeSlotEditor()">
+                    <i class="bi bi-pencil me-1"></i>Edit Time Slots
+                </button>
+            </div>
+        </div>
+        
+        <div id="timeSlotEditor" class="glass-card p-3 mb-3" style="display: none;">
+            <h6 class="mb-3"><i class="bi bi-gear me-2"></i>Customize Your Time Slots</h6>
+            <div id="timeSlotInputs"></div>
+            <div class="mt-3">
+                <button class="btn btn-sm btn-success me-2" onclick="saveTimeSlots()">
+                    <i class="bi bi-check-circle me-1"></i>Save Time Slots
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="hideTimeSlotEditor()">
+                    <i class="bi bi-x-circle me-1"></i>Cancel
+                </button>
+            </div>
+        </div>
+    `;
+    
+    html += '<div class="timetable-grid">';
     html += '<div class="timetable-header">Time</div>';
     days.forEach(day => html += `<div class="timetable-header">${day}</div>`);
     
@@ -383,6 +423,150 @@ function generateTimetableGrid() {
     
     html += '</div>';
     container.innerHTML = html;
+}
+
+function showTimeSlotEditor() {
+    const editor = document.getElementById('timeSlotEditor');
+    const inputs = document.getElementById('timeSlotInputs');
+    
+    let html = '';
+    timeSlots.forEach((slot, index) => {
+        const [start, end] = slot.split('-');
+        html += `
+            <div class="row g-2 mb-2 align-items-center">
+                <div class="col-auto">
+                    <strong>Slot ${index + 1}:</strong>
+                </div>
+                <div class="col">
+                    <input type="time" 
+                           id="slotStart${index}" 
+                           class="form-control form-control-sm" 
+                           value="${convertTo24Hour(start)}">
+                </div>
+                <div class="col-auto">to</div>
+                <div class="col">
+                    <input type="time" 
+                           id="slotEnd${index}" 
+                           class="form-control form-control-sm" 
+                           value="${convertTo24Hour(end)}">
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-sm btn-danger" onclick="removeTimeSlot(${index})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `
+        <button class="btn btn-sm btn-outline-primary mt-2" onclick="addTimeSlot()">
+            <i class="bi bi-plus-circle me-1"></i>Add Time Slot
+        </button>
+    `;
+    
+    inputs.innerHTML = html;
+    editor.style.display = 'block';
+}
+
+function hideTimeSlotEditor() {
+    document.getElementById('timeSlotEditor').style.display = 'none';
+}
+
+function convertTo24Hour(time) {
+    // Convert time like "9:00 AM" or "1:00 PM" to 24-hour format "09:00" or "13:00"
+    time = time.trim();
+    const isPM = time.includes('PM');
+    const isAM = time.includes('AM');
+    
+    // Remove AM/PM
+    time = time.replace(/AM|PM/gi, '').trim();
+    
+    const parts = time.split(':');
+    let hour = parseInt(parts[0]);
+    const minute = parts[1] || '00';
+    
+    // Convert to 24-hour format
+    if (isPM && hour !== 12) {
+        hour += 12;
+    } else if (isAM && hour === 12) {
+        hour = 0;
+    } else if (!isAM && !isPM && hour < 8 && hour !== 12) {
+        // If no AM/PM specified and hour is less than 8, assume PM
+        hour += 12;
+    }
+    
+    return hour.toString().padStart(2, '0') + ':' + minute;
+}
+
+function convertTo12Hour(time24) {
+    // Convert 24-hour format to 12-hour format with AM/PM
+    const [hour, minute] = time24.split(':');
+    let h = parseInt(hour);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    
+    if (h === 0) h = 12;
+    else if (h > 12) h = h - 12;
+    
+    return h + ':' + minute + ' ' + ampm;
+}
+
+function addTimeSlot() {
+    timeSlots.push('9:00 AM-10:00 AM');
+    showTimeSlotEditor();
+}
+
+function removeTimeSlot(index) {
+    if (timeSlots.length <= 1) {
+        showAlert('You must have at least one time slot', 'warning');
+        return;
+    }
+    
+    // Remove timetable entries for this slot
+    const slotToRemove = timeSlots[index];
+    days.forEach(day => {
+        const key = `${day}-${slotToRemove}`;
+        delete timetable[key];
+    });
+    
+    timeSlots.splice(index, 1);
+    showTimeSlotEditor();
+}
+
+function saveTimeSlots() {
+    const newTimeSlots = [];
+    const oldTimeSlots = [...timeSlots];
+    
+    for (let i = 0; i < timeSlots.length; i++) {
+        const startInput = document.getElementById(`slotStart${i}`);
+        const endInput = document.getElementById(`slotEnd${i}`);
+        
+        if (!startInput || !endInput) continue;
+        
+        const start = convertTo12Hour(startInput.value);
+        const end = convertTo12Hour(endInput.value);
+        const newSlot = `${start}-${end}`;
+        
+        newTimeSlots.push(newSlot);
+        
+        // Update timetable keys if slot changed
+        if (oldTimeSlots[i] !== newSlot) {
+            days.forEach(day => {
+                const oldKey = `${day}-${oldTimeSlots[i]}`;
+                const newKey = `${day}-${newSlot}`;
+                if (timetable[oldKey] !== undefined) {
+                    timetable[newKey] = timetable[oldKey];
+                    delete timetable[oldKey];
+                }
+            });
+        }
+    }
+    
+    timeSlots = newTimeSlots;
+    hideTimeSlotEditor();
+    generateTimetableGrid();
+    saveData();
+    showAlert('Time slots updated successfully!', 'success');
 }
 
 function updateTimetable(id) {
@@ -733,6 +917,7 @@ function calculateBunks() {
 // Profile Display
 function updateProfileDisplay() {
     document.getElementById('profileUsername').textContent = currentUsername || '-';
+    document.getElementById('profileEmail').textContent = userEmail || '-';
     document.getElementById('profileStudentName').textContent = studentName || '-';
     document.getElementById('profileRollNo').textContent = universityRollNo || '-';
     document.getElementById('profileSemester').textContent = document.getElementById('semesterName')?.value || '-';
@@ -748,6 +933,149 @@ function updateProfileDisplay() {
     
     const overallPercentage = totalClasses > 0 ? ((attendedClasses / totalClasses) * 100).toFixed(2) : "0.00";
     document.getElementById('profileAttendance').textContent = `${attendedClasses} / ${totalClasses} (${overallPercentage}%)`;
+    
+    checkPremiumStatus();
+}
+
+// Premium Payment Functions
+async function checkPremiumStatus() {
+    try {
+        const response = await fetch('/check_premium');
+        const result = await response.json();
+        
+        const container = document.getElementById('premiumStatusDisplay');
+        if (!container) return;
+        
+        if (result.success && result.premium) {
+            const expiry = new Date(result.expiry);
+            const expiryStr = expiry.toLocaleDateString();
+            container.innerHTML = `
+                <div class="alert alert-success mb-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill fs-3 me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Premium Active ✨</h6>
+                                <small>Valid until ${expiryStr}</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deactivatePremium()" title="Deactivate Premium">
+                            <i class="bi bi-x-circle me-1"></i>Deactivate
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="text-center py-3">
+                    <i class="bi bi-star fs-1 text-warning mb-3"></i>
+                    <h6 class="mb-2">Upgrade to Premium</h6>
+                    <p class="text-muted small mb-3">Unlock AI-powered features</p>
+                    <ul class="list-unstyled text-start mb-3">
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Grade Predictor</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Advanced Analytics</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>AI Study Insights</li>
+                    </ul>
+                    <div class="mb-3">
+                        <span class="h3 fw-bold text-primary-custom">₹99</span>
+                        <span class="text-muted">/year</span>
+                    </div>
+                    <button class="btn btn-primary-custom w-100" onclick="showPaymentModal()">
+                        <i class="bi bi-lightning-fill me-2"></i>Upgrade Now
+                    </button>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error checking premium status:', error);
+    }
+}
+
+function showPaymentModal() {
+    const modal = document.getElementById('paymentModal');
+    if (modal) {
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    }
+}
+
+function selectPaymentMethod(method) {
+    document.querySelectorAll('.payment-method-card').forEach(card => {
+        card.classList.remove('border-primary', 'border-3');
+    });
+    event.currentTarget.classList.add('border-primary', 'border-3');
+    
+    const qrSection = document.getElementById('qrCodeSection');
+    const cardSection = document.getElementById('cardSection');
+    const upiSection = document.getElementById('upiSection');
+    
+    qrSection.style.display = 'none';
+    cardSection.style.display = 'none';
+    upiSection.style.display = 'none';
+    
+    if (method === 'upi') {
+        qrSection.style.display = 'block';
+        upiSection.style.display = 'block';
+    } else if (method === 'card') {
+        cardSection.style.display = 'block';
+    }
+}
+
+async function processPayment() {
+    const btn = document.getElementById('payBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+    
+    setTimeout(async () => {
+        try {
+            const response = await fetch('/activate_premium_demo', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                document.getElementById('paymentForm').style.display = 'none';
+                document.getElementById('paymentSuccess').style.display = 'block';
+                setTimeout(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+                    checkPremiumStatus();
+                    showAlert('Premium activated successfully! 🎉', 'success');
+                }, 2000);
+            } else {
+                showAlert('Payment failed: ' + result.message, 'danger');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Pay ₹99';
+            }
+        } catch (error) {
+            showAlert('Error processing payment. Please try again.', 'danger');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Pay ₹99';
+        }
+    }, 2000);
+}
+
+async function deactivatePremium() {
+    if (!confirm('Are you sure you want to deactivate Premium? You will lose access to all premium features.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/deactivate_premium', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('Premium deactivated successfully', 'info');
+            checkPremiumStatus();
+        } else {
+            showAlert('Failed to deactivate premium: ' + result.message, 'danger');
+        }
+    } catch (error) {
+        showAlert('Error deactivating premium. Please try again.', 'danger');
+    }
 }
 
 // File Upload
@@ -936,7 +1264,7 @@ function stopTimer() {
     
     if (sessionStartTime) {
         const duration = Math.floor((Date.now() - sessionStartTime) / 60000);
-        const today = new Date().toISOString().split('T')[0];
+        const today = getLocalDateString();
         
         if (duration > 0) {
             studyData.sessions.push({
@@ -947,7 +1275,7 @@ function stopTimer() {
             studyData.totalMinutes += duration;
             
             if (studyData.lastStudyDate !== today) {
-                const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+                const yesterday = getLocalDateString(new Date(Date.now() - 86400000));
                 studyData.streak = studyData.lastStudyDate === yesterday ? studyData.streak + 1 : 1;
                 studyData.lastStudyDate = today;
             }
@@ -981,11 +1309,30 @@ function loadStudyData() {
     document.getElementById('weeklyGoal').value = studyData.weeklyGoal;
 }
 
+function getLocalDateString(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${day}/${month}/${year}`;
+}
+
+function parseLocalDate(dateStr) {
+    // Parse dd/mm/yyyy format
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+        return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+    return new Date(dateStr);
+}
+
 function updateStudyStats() {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
     const todayMinutes = studyData.sessions.filter(s => s.date === today).reduce((sum, s) => sum + s.duration, 0);
-    const weekStart = new Date(Date.now() - 6 * 86400000).toISOString().split('T')[0];
-    const weekMinutes = studyData.sessions.filter(s => s.date >= weekStart).reduce((sum, s) => sum + s.duration, 0);
+    const weekStart = new Date(Date.now() - 6 * 86400000);
+    const weekMinutes = studyData.sessions.filter(s => {
+        const sessionDate = parseLocalDate(s.date);
+        return sessionDate >= weekStart;
+    }).reduce((sum, s) => sum + s.duration, 0);
     
     document.getElementById('todayTime').textContent = Math.floor(todayMinutes / 60) + 'h ' + (todayMinutes % 60) + 'm';
     document.getElementById('weekTime').textContent = Math.floor(weekMinutes / 60) + 'h ' + (weekMinutes % 60) + 'm';
@@ -996,6 +1343,89 @@ function updateStudyStats() {
     updateWeeklyStudyChart();
     updateSubjectStudyChart();
     updateStudyHistory();
+    updateAIInsights();
+}
+
+async function updateAIInsights() {
+    const container = document.getElementById('aiInsights');
+    if (!container) return;
+    
+    if (!studyData.sessions || studyData.sessions.length < 3) {
+        container.innerHTML = `
+            <div class="text-center text-muted py-3">
+                <i class="bi bi-lightbulb" style="font-size: 2rem; opacity: 0.3;"></i>
+                <p class="small mt-2">Complete 3+ study sessions to unlock AI insights</p>
+            </div>
+        `;
+        return;
+    }
+    
+    try {
+        // Get productivity analytics
+        const analyticsResponse = await fetch('/api/study_analytics', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({study_sessions: studyData.sessions})
+        });
+        const analyticsResult = await analyticsResponse.json();
+        
+        // Get subject recommendation
+        const recommendResponse = await fetch('/api/recommend_subject', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                study_sessions: studyData.sessions,
+                subjects: subjects,
+                attendance_data: attendanceData
+            })
+        });
+        const recommendResult = await recommendResponse.json();
+        
+        if (analyticsResult.success) {
+            const analytics = analyticsResult.analytics;
+            let html = `
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted">Productivity Score</small>
+                        <span class="badge ${analytics.productivity_score >= 70 ? 'bg-success' : analytics.productivity_score >= 40 ? 'bg-warning' : 'bg-danger'}">
+                            ${analytics.productivity_score}%
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar ${analytics.productivity_score >= 70 ? 'bg-success' : analytics.productivity_score >= 40 ? 'bg-warning' : 'bg-danger'}" 
+                             style="width: ${analytics.productivity_score}%"></div>
+                    </div>
+                </div>
+            `;
+            
+            if (recommendResult.success && recommendResult.recommendation) {
+                const rec = recommendResult.recommendation;
+                html += `
+                    <div class="alert alert-info p-2 mb-2">
+                        <small class="fw-bold"><i class="bi bi-star me-1"></i>Recommended:</small><br>
+                        <small>${rec.subject_name}</small><br>
+                        <small class="text-muted">${rec.reason}</small>
+                    </div>
+                `;
+            }
+            
+            if (analytics.insights && analytics.insights.length > 0) {
+                analytics.insights.slice(0, 2).forEach(insight => {
+                    const icon = insight.type === 'success' ? 'check-circle' : insight.type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+                    const color = insight.type === 'success' ? 'success' : insight.type === 'warning' ? 'warning' : 'info';
+                    html += `
+                        <div class="alert alert-${color} p-2 mb-2">
+                            <small><i class="bi bi-${icon} me-1"></i>${insight.message}</small>
+                        </div>
+                    `;
+                });
+            }
+            
+            container.innerHTML = html;
+        }
+    } catch (error) {
+        console.error('Error fetching AI insights:', error);
+    }
 }
 
 function updateGoalProgress(todayMinutes, weekMinutes) {
@@ -1037,18 +1467,31 @@ function updateWeeklyStudyChart() {
         return;
     }
     
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const weekData = [0, 0, 0, 0, 0, 0, 0];
+    const weekDates = [];
+    const labels = [];
     
     const today = new Date();
+    
+    // Generate labels with day name and date for last 7 days
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        weekDates.push(date);
+        const dayName = dayNames[date.getDay()];
+        const dateStr = (date.getMonth() + 1) + '/' + date.getDate();
+        labels.push(dayName + '\n' + dateStr);
+    }
+    
     if (studyData.sessions && studyData.sessions.length > 0) {
         studyData.sessions.forEach(session => {
             try {
-                const sessionDate = new Date(session.date);
+                const sessionDate = parseLocalDate(session.date);
                 const daysDiff = Math.floor((today - sessionDate) / 86400000);
                 if (daysDiff >= 0 && daysDiff < 7) {
-                    const dayIndex = sessionDate.getDay();
-                    weekData[dayIndex] += session.duration;
+                    const index = 6 - daysDiff;
+                    weekData[index] += session.duration;
                 }
             } catch (e) {
                 console.error('Error processing session:', e);
@@ -1068,7 +1511,7 @@ function updateWeeklyStudyChart() {
         window.weeklyStudyChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: days,
+                labels: labels,
                 datasets: [{
                     label: 'Study Time (minutes)',
                     data: weekData,
@@ -1210,7 +1653,7 @@ function updateSubjectStudyChart() {
     }
 }
 
-function updateStudyHistory() {
+function updateStudyHistory(filteredSessions = null) {
     const container = document.getElementById('studyHistoryContainer');
     if (!container) return;
     
@@ -1224,19 +1667,39 @@ function updateStudyHistory() {
         return;
     }
     
-    const recentSessions = studyData.sessions.slice().reverse().slice(0, 10);
-    let html = '<div class="table-responsive"><table class="table table-hover"><thead><tr><th>Date</th><th>Subject</th><th>Duration</th></tr></thead><tbody>';
+    const sessionsToShow = filteredSessions || studyData.sessions.slice().reverse();
+    const displaySessions = filteredSessions ? sessionsToShow : sessionsToShow.slice(0, 10);
     
-    recentSessions.forEach(session => {
+    if (displaySessions.length === 0) {
+        container.innerHTML = `
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                No sessions found for the selected date range.
+            </div>
+        `;
+        return;
+    }
+    
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    let html = '<div class="table-responsive"><table class="table table-hover"><thead><tr><th>Date & Day</th><th>Subject</th><th>Duration</th></tr></thead><tbody>';
+    
+    displaySessions.forEach(session => {
         const subject = subjects.find(s => s.id == session.subject);
         const subjectName = subject ? subject.name : 'Unknown';
         const hours = Math.floor(session.duration / 60);
         const mins = session.duration % 60;
         const duration = hours > 0 ? hours + 'h ' + mins + 'm' : mins + 'm';
         
+        const sessionDate = parseLocalDate(session.date);
+        const dayName = dayNames[sessionDate.getDay()];
+        const dateStr = session.date;
+        
         html += `
             <tr>
-                <td><i class="bi bi-calendar3 me-2"></i>${session.date}</td>
+                <td>
+                    <i class="bi bi-calendar3 me-2"></i>${dateStr}<br>
+                    <small class="text-muted">${dayName}</small>
+                </td>
                 <td><span class="badge bg-primary">${subjectName}</span></td>
                 <td><i class="bi bi-clock me-2"></i>${duration}</td>
             </tr>
@@ -1245,9 +1708,47 @@ function updateStudyHistory() {
     
     html += '</tbody></table></div>';
     
-    if (studyData.sessions.length > 10) {
+    if (!filteredSessions && studyData.sessions.length > 10) {
         html += '<div class="text-center mt-2"><small class="text-muted">Showing 10 most recent sessions out of ' + studyData.sessions.length + ' total</small></div>';
+    } else if (filteredSessions) {
+        html += '<div class="text-center mt-2"><small class="text-muted">Showing ' + displaySessions.length + ' filtered session(s)</small></div>';
     }
     
     container.innerHTML = html;
+}
+
+function filterStudyHistory() {
+    const fromDate = document.getElementById('filterFromDate').value;
+    const toDate = document.getElementById('filterToDate').value;
+    
+    if (!fromDate && !toDate) {
+        showAlert('Please select at least one date', 'warning');
+        return;
+    }
+    
+    let filtered = studyData.sessions.slice();
+    
+    if (fromDate) {
+        const fromDateObj = new Date(fromDate);
+        filtered = filtered.filter(s => parseLocalDate(s.date) >= fromDateObj);
+    }
+    
+    if (toDate) {
+        const toDateObj = new Date(toDate);
+        filtered = filtered.filter(s => parseLocalDate(s.date) <= toDateObj);
+    }
+    
+    filtered.reverse();
+    updateStudyHistory(filtered);
+}
+
+function clearHistoryFilter() {
+    document.getElementById('filterFromDate').value = '';
+    document.getElementById('filterToDate').value = '';
+    updateStudyHistory();
+}
+
+// Initialize premium check on profile tab
+if (document.getElementById('premiumStatusDisplay')) {
+    checkPremiumStatus();
 }
