@@ -1,4 +1,4 @@
-# app.py - Updated with Study Tracker Support
+# app.py - Updated with Landing Page Support
 
 import os
 import json
@@ -8,7 +8,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from flask import Flask, request, jsonify, render_template, session
+from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
@@ -26,11 +26,16 @@ def get_user_filepath(username):
     """Returns the path to a user's JSON data file."""
     return os.path.join(DATA_DIR, f"{username}.json")
 
-# --- Main Route ---
+# --- Main Routes ---
 @app.route('/')
-def index():
-    """Serves the main HTML page."""
-    return render_template('index.html')
+def landing():
+    """Serves the main page."""
+    return render_template('landing.html')
+
+@app.route('/dashboard')
+def dashboard():
+    """Serves the dashboard if authenticated, otherwise redirects to landing."""
+    return render_template('dashboard.html')
 
 # --- Authentication Routes ---
 @app.route('/signup', methods=['POST'])
@@ -270,7 +275,7 @@ def get_attendance_plot():
 
     # Create the plot
     fig, ax = plt.subplots(figsize=(10, 6))
-    bars = ax.bar(subject_names, percentages, color='#006b2f', edgecolor='#004d26', linewidth=2)
+    bars = ax.bar(subject_names, percentages, color='#2c3e50', edgecolor='#1a252f', linewidth=2)
     
     # Customize the plot
     ax.set_ylabel('Attendance Percentage (%)', fontsize=12, fontweight='bold')

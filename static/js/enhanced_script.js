@@ -31,29 +31,24 @@ async function checkAuthAndLoadData() {
             updateAllDisplays();
             showTab('dashboard');
         } else {
-            updateLoginState(false);
-            showTab('login');
+            window.location.href = '/';
         }
     } catch (error) {
         console.error('Error checking auth:', error);
-        updateLoginState(false);
-        showTab('login');
+        window.location.href = '/';
     }
 }
 
 function updateLoginState(isLoggedIn) {
-    const authSection = document.getElementById('authNavSection');
     const appSection = document.getElementById('appNavSection');
     const headerUserInfo = document.getElementById('headerUserInfo');
     const headerUsername = document.getElementById('headerUsername');
 
     if (isLoggedIn) {
-        authSection.classList.add('d-none');
         appSection.classList.remove('d-none');
         headerUserInfo.classList.remove('d-none');
-        headerUsername.textContent = `Welcome, ${currentUsername}!`;
+        headerUsername.textContent = 'Welcome, ' + currentUsername + '!';
     } else {
-        authSection.classList.remove('d-none');
         appSection.classList.add('d-none');
         headerUserInfo.classList.add('d-none');
     }
@@ -93,7 +88,12 @@ function showTab(tabName) {
     else if (tabName === 'profile') updateProfileDisplay();
     else if (tabName === 'timetable') generateTimetableGrid();
     else if (tabName === 'setup') populateSetupTab();
-    else if (tabName === 'studyTracker') populateStudyTrackerSubjects();
+    else if (tabName === 'studyTracker') { 
+        populateStudyTrackerSubjects(); 
+        setTimeout(() => {
+            updateWeeklyStudyChart();
+        }, 100);
+    }
 }
 
 // Mobile Navigation
@@ -171,9 +171,7 @@ async function logout() {
         subjects = [];
         timetable = {};
         attendanceData = {};
-        updateLoginState(false);
-        showTab('login');
-        showAlert('Logged out successfully', 'info');
+        window.location.href = '/';
     } catch (error) {
         console.error('Error during logout:', error);
     }
@@ -796,105 +794,136 @@ function showAlert(message, type = 'info') {
 }
 
 // Study Tracker Functions
+let timerInterval = null;
+let timerSeconds = 1500;
+let timerDuration = 25;
+let studyData = { sessions: [], totalMinutes: 0, streak: 0, lastStudyDate: null, dailyGoal: 2, weeklyGoal: 14 };
+let sessionStartTime = 0;
+let currentSubject = null;
+let isTimerRunning = false;
+
+function setTimerDuration(minutes) {
+    if (isTimerRunning) {
+        showAlert('Please stop the current timer first', 'warning');
+        return;
+    }
+    timerDuration = minutes;
+    timerSeconds = minutes * 60;
+    updateTimerDisplay();
+}
+
+function setCustomTimer() {
+    const customMinutes = parseInt(document.getElementById('customTimer').value);
+    if (!customMinutes || customMinutes < 1 || customMinutes > 180) {
+        showAlert('Please enter a valid time between 1-180 minutes', 'warning');
+        return;
+    }
+    setTimerDuration(customMinutes);
+    document.getElementById('customTimer').value = '';
+}
+
+function updateTimerDisplay() {
+    const mins = Math.floor(timerSeconds / 60);
+    const secs = timerSeconds % 60;
+    document.getElementById('timerDisplay').textContent = mins + ':' + secs.toString().padStart(2, '0');
+}
+
 function populateStudyTrackerSubjects() {
-    const select = document.getElementById('studySubjectSelect');
+    const select = document.getElementById('studySubject');
     if (!select) return;
     
-    select.innerHTML = '<option value="">-- Select Subject --</option>';
+    select.innerHTML = '<option value="">Select Subject</option>';
     subjects.forEach(subject => {
         select.innerHTML += `<option value="${subject.id}">${subject.name}</option>`;
     });
     loadStudyData();
+    updateStudyStats();
+    
+    if (!studyData.sessions || studyData.sessions.length === 0) {
+        const errorDiv = document.getElementById('chartError');
+        if (errorDiv) errorDiv.style.display = 'block';
+    }
 }
 
-let timerInterval = null;
-let timerSeconds = 0;
-let studyData = { sessions: [], totalMinutes: 0, streak: 0, lastStudyDate: null };
-let sessionStartTime = 0;
-let currentSubject = null;
-
 function startTimer() {
-    const subject = document.getElementById('studySubjectSelect').value;
+    const subject = document.getElementById('studySubject').value;
     if (!subject) {
         showAlert('Please select a subject', 'warning');
         return;
     }
     
     currentSubject = subject;
-    const customTime = document.getElementById('customTimerInput').value;
-    const selectedMode = document.querySelector('input[name="timerMode"]:checked').value;
-    const minutes = customTime || selectedMode;
-    
-    timerSeconds = minutes * 60;
     sessionStartTime = Date.now();
-    document.getElementById('startTimerBtn').classList.add('d-none');
-    document.getElementById('timerControls').classList.remove('d-none');
+    isTimerRunning = true;
+    
+    document.getElementById('startBtn').disabled = true;
+    document.getElementById('pauseBtn').disabled = false;
+    document.getElementById('stopBtn').disabled = false;
     
     timerInterval = setInterval(() => {
         timerSeconds--;
-        const mins = Math.floor(timerSeconds / 60);
-        const secs = timerSeconds % 60;
-        document.getElementById('timerDisplay').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+        updateTimerDisplay();
         
         if (timerSeconds <= 0) {
-            stopTimer(true);
+            stopTimer();
             showAlert('Study session completed!', 'success');
         }
     }, 1000);
 }
 
 function pauseTimer() {
-    if (timerInterval) {
+    if (isTimerRunning) {
         clearInterval(timerInterval);
-        timerInterval = null;
-        document.getElementById('pauseTimerBtn').innerHTML = '<i class="bi bi-play-fill me-2"></i>Resume';
+        isTimerRunning = false;
+        document.getElementById('pauseBtn').innerHTML = '<i class="bi bi-play-fill"></i> Resume';
     } else {
+        isTimerRunning = true;
+        document.getElementById('pauseBtn').innerHTML = '<i class="bi bi-pause-fill"></i> Pause';
         timerInterval = setInterval(() => {
             timerSeconds--;
-            const mins = Math.floor(timerSeconds / 60);
-            const secs = timerSeconds % 60;
-            document.getElementById('timerDisplay').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+            updateTimerDisplay();
             if (timerSeconds <= 0) {
-                stopTimer(true);
+                stopTimer();
                 showAlert('Study session completed!', 'success');
             }
         }, 1000);
-        document.getElementById('pauseTimerBtn').innerHTML = '<i class="bi bi-pause-fill me-2"></i>Pause';
     }
 }
 
-function stopTimer(completed = false) {
+function stopTimer() {
     clearInterval(timerInterval);
-    timerInterval = null;
+    isTimerRunning = false;
     
-    if (completed && sessionStartTime) {
+    if (sessionStartTime) {
         const duration = Math.floor((Date.now() - sessionStartTime) / 60000);
         const today = new Date().toISOString().split('T')[0];
         
-        studyData.sessions.push({
-            subject: currentSubject,
-            date: today,
-            duration: duration,
-            notes: document.getElementById('sessionNotes').value
-        });
-        studyData.totalMinutes += duration;
-        
-        if (studyData.lastStudyDate !== today) {
-            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-            studyData.streak = studyData.lastStudyDate === yesterday ? studyData.streak + 1 : 1;
-            studyData.lastStudyDate = today;
+        if (duration > 0) {
+            studyData.sessions.push({
+                subject: currentSubject,
+                date: today,
+                duration: duration
+            });
+            studyData.totalMinutes += duration;
+            
+            if (studyData.lastStudyDate !== today) {
+                const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+                studyData.streak = studyData.lastStudyDate === yesterday ? studyData.streak + 1 : 1;
+                studyData.lastStudyDate = today;
+            }
+            
+            saveStudyData();
+            updateStudyStats();
         }
-        
-        saveStudyData();
-        updateStudyStats();
     }
     
-    timerSeconds = 0;
+    timerSeconds = timerDuration * 60;
     sessionStartTime = 0;
-    document.getElementById('timerDisplay').textContent = '25:00';
-    document.getElementById('startTimerBtn').classList.remove('d-none');
-    document.getElementById('timerControls').classList.add('d-none');
-    document.getElementById('sessionNotes').value = '';
+    updateTimerDisplay();
+    document.getElementById('startBtn').disabled = false;
+    document.getElementById('pauseBtn').disabled = true;
+    document.getElementById('pauseBtn').innerHTML = '<i class="bi bi-pause-fill"></i> Pause';
+    document.getElementById('stopBtn').disabled = true;
 }
 
 function saveStudyData() {
@@ -905,12 +934,11 @@ function loadStudyData() {
     const saved = localStorage.getItem(`studyData_${currentUsername}`);
     if (saved) {
         studyData = JSON.parse(saved);
-        if (studyData.dailyGoal) document.getElementById('dailyGoalSlider').value = studyData.dailyGoal;
-        if (studyData.weeklyGoal) document.getElementById('weeklyGoalSlider').value = studyData.weeklyGoal;
-        updateGoalDisplay('daily');
-        updateGoalDisplay('weekly');
+        if (!studyData.dailyGoal) studyData.dailyGoal = 2;
+        if (!studyData.weeklyGoal) studyData.weeklyGoal = 14;
     }
-    updateStudyStats();
+    document.getElementById('dailyGoal').value = studyData.dailyGoal;
+    document.getElementById('weeklyGoal').value = studyData.weeklyGoal;
 }
 
 function updateStudyStats() {
@@ -919,159 +947,267 @@ function updateStudyStats() {
     const weekStart = new Date(Date.now() - 6 * 86400000).toISOString().split('T')[0];
     const weekMinutes = studyData.sessions.filter(s => s.date >= weekStart).reduce((sum, s) => sum + s.duration, 0);
     
-    document.getElementById('todayStudyTime').textContent = `${Math.floor(todayMinutes / 60)}h ${todayMinutes % 60}m`;
-    document.getElementById('weekStudyTime').textContent = `${Math.floor(weekMinutes / 60)}h ${weekMinutes % 60}m`;
+    document.getElementById('todayTime').textContent = Math.floor(todayMinutes / 60) + 'h ' + (todayMinutes % 60) + 'm';
+    document.getElementById('weekTime').textContent = Math.floor(weekMinutes / 60) + 'h ' + (weekMinutes % 60) + 'm';
     document.getElementById('totalSessions').textContent = studyData.sessions.length;
-    document.getElementById('studyStreak').textContent = `${studyData.streak} days`;
+    document.getElementById('studyStreak').textContent = studyData.streak + ' days';
     
     updateGoalProgress(todayMinutes, weekMinutes);
-    updateSubjectWiseStudyTime();
-    updateRecentSessions();
-    updateWeeklyChart();
-}
-
-function updateGoalDisplay(type) {
-    if (type === 'daily') {
-        const val = document.getElementById('dailyGoalSlider').value;
-        document.getElementById('dailyGoalDisplay').textContent = `${val} hours`;
-    } else {
-        const val = document.getElementById('weeklyGoalSlider').value;
-        document.getElementById('weeklyGoalDisplay').textContent = `${val} hours`;
-    }
-}
-
-function updateSubjectWiseStudyTime() {
-    const container = document.getElementById('subjectStudyTimeContainer');
-    if (!container || !studyData.sessions.length) return;
-    
-    const subjectTimes = {};
-    studyData.sessions.forEach(session => {
-        subjectTimes[session.subject] = (subjectTimes[session.subject] || 0) + session.duration;
-    });
-    
-    let html = '';
-    Object.entries(subjectTimes).forEach(([subjectId, minutes]) => {
-        const subject = subjects.find(s => s.id == subjectId);
-        if (!subject) return;
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        html += `
-            <div class="glass-card p-3 mb-2">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="fw-bold">${subject.name}</div>
-                    <div class="text-primary-custom fw-bold">${hours}h ${mins}m</div>
-                </div>
-            </div>
-        `;
-    });
-    container.innerHTML = html || '<div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>No study sessions recorded yet</div>';
-}
-
-function updateRecentSessions() {
-    const container = document.getElementById('recentSessionsContainer');
-    if (!container || !studyData.sessions.length) return;
-    
-    const recent = studyData.sessions.slice(-5).reverse();
-    let html = '';
-    recent.forEach(session => {
-        const subject = subjects.find(s => s.id == session.subject);
-        if (!subject) return;
-        html += `
-            <div class="glass-card p-3 mb-2">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="fw-bold">${subject.name}</div>
-                        <small class="text-muted">${session.date} • ${session.duration} min</small>
-                        ${session.notes ? `<div class="small mt-1">${session.notes}</div>` : ''}
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-    container.innerHTML = html;
+    updateWeeklyStudyChart();
+    updateSubjectStudyChart();
+    updateStudyHistory();
 }
 
 function updateGoalProgress(todayMinutes, weekMinutes) {
-    const dailyGoal = parseFloat(document.getElementById('dailyGoalSlider').value) * 60;
-    const weeklyGoal = parseFloat(document.getElementById('weeklyGoalSlider').value) * 60;
+    const dailyGoal = parseFloat(document.getElementById('dailyGoal').value) * 60;
+    const weeklyGoal = parseFloat(document.getElementById('weeklyGoal').value) * 60;
     
-    const dailyPercent = Math.min((todayMinutes / dailyGoal) * 100, 100);
-    const weeklyPercent = Math.min((weekMinutes / weeklyGoal) * 100, 100);
+    const dailyPercent = Math.min((todayMinutes / dailyGoal) * 100, 100).toFixed(0);
+    const weeklyPercent = Math.min((weekMinutes / weeklyGoal) * 100, 100).toFixed(0);
     
-    document.getElementById('dailyGoalProgress').style.width = `${dailyPercent}%`;
-    document.getElementById('weeklyGoalProgress').style.width = `${weeklyPercent}%`;
-    
-    const dailyHours = (todayMinutes / 60).toFixed(1);
-    const weeklyHours = (weekMinutes / 60).toFixed(1);
-    document.getElementById('dailyGoalStatus').textContent = `${dailyHours} of ${document.getElementById('dailyGoalSlider').value} hours completed`;
-    document.getElementById('weeklyGoalStatus').textContent = `${weeklyHours} of ${document.getElementById('weeklyGoalSlider').value} hours completed`;
+    document.getElementById('dailyProgress').style.width = `${dailyPercent}%`;
+    document.getElementById('dailyProgress').textContent = `${dailyPercent}%`;
+    document.getElementById('weeklyProgress').style.width = `${weeklyPercent}%`;
+    document.getElementById('weeklyProgress').textContent = `${weeklyPercent}%`;
 }
 
 function saveStudyGoals() {
-    studyData.dailyGoal = document.getElementById('dailyGoalSlider').value;
-    studyData.weeklyGoal = document.getElementById('weeklyGoalSlider').value;
+    studyData.dailyGoal = parseFloat(document.getElementById('dailyGoal').value);
+    studyData.weeklyGoal = parseFloat(document.getElementById('weeklyGoal').value);
     saveStudyData();
-    showAlert('Goals saved!', 'success');
-}
-function showStudyHistory() {
-    if (!studyData.sessions.length) {
-        showAlert('No study history available', 'info');
-        return;
-    }
-    let html = '<div class="modal-body"><h5>Study History</h5>';
-    studyData.sessions.slice().reverse().forEach(session => {
-        const subject = subjects.find(s => s.id == session.subject);
-        html += `<div class="border-bottom py-2"><strong>${subject?.name || 'Unknown'}</strong> - ${session.date} (${session.duration} min)${session.notes ? '<br><small>' + session.notes + '</small>' : ''}</div>`;
-    });
-    html += '</div>';
-    showAlert(html, 'info');
-}
-function exportStudyData() { showAlert('Study tracker feature coming soon!', 'info'); }
-function updateWeeklyChart() {
-    const canvas = document.getElementById('studyAnalyticsChart');
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const weekData = Array(7).fill(0);
-    
-    studyData.sessions.forEach(session => {
-        const date = new Date(session.date);
-        const daysDiff = Math.floor((Date.now() - date.getTime()) / 86400000);
-        if (daysDiff < 7) {
-            const dayIndex = date.getDay();
-            weekData[dayIndex] += session.duration;
-        }
-    });
-    
-    if (window.studyChart) window.studyChart.destroy();
-    
-    window.studyChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: days,
-            datasets: [{
-                label: 'Study Time (minutes)',
-                data: weekData,
-                backgroundColor: '#2c3e50',
-                borderRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                y: { beginAtZero: true }
-            }
-        }
-    });
+    updateStudyStats();
+    showAlert('Goals saved successfully!', 'success');
 }
 
-function clearStudyData() {
-    if (confirm('Clear all study data?')) {
-        studyData = { sessions: [], totalMinutes: 0, streak: 0, lastStudyDate: null };
-        saveStudyData();
-        updateStudyStats();
-        showAlert('Study data cleared', 'success');
+function updateWeeklyStudyChart() {
+    const canvas = document.getElementById('weeklyStudyChart');
+    if (!canvas) {
+        console.error('Canvas element not found');
+        return;
     }
+    
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js not loaded');
+        return;
+    }
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        console.error('Cannot get canvas context');
+        return;
+    }
+    
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekData = [0, 0, 0, 0, 0, 0, 0];
+    
+    const today = new Date();
+    if (studyData.sessions && studyData.sessions.length > 0) {
+        studyData.sessions.forEach(session => {
+            try {
+                const sessionDate = new Date(session.date);
+                const daysDiff = Math.floor((today - sessionDate) / 86400000);
+                if (daysDiff >= 0 && daysDiff < 7) {
+                    const dayIndex = sessionDate.getDay();
+                    weekData[dayIndex] += session.duration;
+                }
+            } catch (e) {
+                console.error('Error processing session:', e);
+            }
+        });
+    }
+    
+    if (window.weeklyStudyChart) {
+        try {
+            window.weeklyStudyChart.destroy();
+        } catch (e) {
+            console.error('Error destroying chart:', e);
+        }
+    }
+    
+    try {
+        window.weeklyStudyChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: days,
+                datasets: [{
+                    label: 'Study Time (minutes)',
+                    data: weekData,
+                    backgroundColor: 'rgba(44, 62, 80, 0.8)',
+                    borderColor: '#2c3e50',
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const minutes = context.parsed.y;
+                                const hours = Math.floor(minutes / 60);
+                                const mins = minutes % 60;
+                                return 'Study Time: ' + hours + 'h ' + mins + 'm';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 15,
+                            callback: function(value) {
+                                return value + ' min';
+                            }
+                        },
+                        min: 0,
+                        suggestedMax: 120
+                    }
+                }
+            }
+        });
+        console.log('Chart created successfully with data:', weekData);
+    } catch (error) {
+        console.error('Error creating chart:', error);
+    }
+}
+
+function updateSubjectStudyChart() {
+    const canvas = document.getElementById('subjectStudyChart');
+    if (!canvas) return;
+    
+    if (typeof Chart === 'undefined') return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    const subjectTimes = {};
+    const subjectNames = [];
+    const subjectMinutes = [];
+    const colors = [
+        'rgba(44, 62, 80, 0.8)',
+        'rgba(52, 152, 219, 0.8)',
+        'rgba(46, 204, 113, 0.8)',
+        'rgba(241, 196, 15, 0.8)',
+        'rgba(231, 76, 60, 0.8)',
+        'rgba(155, 89, 182, 0.8)',
+        'rgba(26, 188, 156, 0.8)',
+        'rgba(230, 126, 34, 0.8)'
+    ];
+    
+    if (studyData.sessions && studyData.sessions.length > 0) {
+        studyData.sessions.forEach(session => {
+            if (!subjectTimes[session.subject]) {
+                subjectTimes[session.subject] = 0;
+            }
+            subjectTimes[session.subject] += session.duration;
+        });
+        
+        Object.entries(subjectTimes).forEach(([subjectId, minutes]) => {
+            const subject = subjects.find(s => s.id == subjectId);
+            if (subject) {
+                subjectNames.push(subject.name);
+                subjectMinutes.push(minutes);
+            }
+        });
+    }
+    
+    if (subjectNames.length === 0) {
+        document.getElementById('subjectChartError').style.display = 'block';
+        return;
+    } else {
+        document.getElementById('subjectChartError').style.display = 'none';
+    }
+    
+    if (window.subjectStudyChart) {
+        try {
+            window.subjectStudyChart.destroy();
+        } catch (e) {}
+    }
+    
+    try {
+        window.subjectStudyChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: subjectNames,
+                datasets: [{
+                    label: 'Study Time (minutes)',
+                    data: subjectMinutes,
+                    backgroundColor: colors.slice(0, subjectNames.length),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'right'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const minutes = context.parsed;
+                                const hours = Math.floor(minutes / 60);
+                                const mins = minutes % 60;
+                                return context.label + ': ' + hours + 'h ' + mins + 'm';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error creating subject chart:', error);
+    }
+}
+
+function updateStudyHistory() {
+    const container = document.getElementById('studyHistoryContainer');
+    if (!container) return;
+    
+    if (!studyData.sessions || studyData.sessions.length === 0) {
+        container.innerHTML = `
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                No study sessions recorded yet. Start a timer to track your study time!
+            </div>
+        `;
+        return;
+    }
+    
+    const recentSessions = studyData.sessions.slice().reverse().slice(0, 10);
+    let html = '<div class="table-responsive"><table class="table table-hover"><thead><tr><th>Date</th><th>Subject</th><th>Duration</th></tr></thead><tbody>';
+    
+    recentSessions.forEach(session => {
+        const subject = subjects.find(s => s.id == session.subject);
+        const subjectName = subject ? subject.name : 'Unknown';
+        const hours = Math.floor(session.duration / 60);
+        const mins = session.duration % 60;
+        const duration = hours > 0 ? hours + 'h ' + mins + 'm' : mins + 'm';
+        
+        html += `
+            <tr>
+                <td><i class="bi bi-calendar3 me-2"></i>${session.date}</td>
+                <td><span class="badge bg-primary">${subjectName}</span></td>
+                <td><i class="bi bi-clock me-2"></i>${duration}</td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table></div>';
+    
+    if (studyData.sessions.length > 10) {
+        html += '<div class="text-center mt-2"><small class="text-muted">Showing 10 most recent sessions out of ' + studyData.sessions.length + ' total</small></div>';
+    }
+    
+    container.innerHTML = html;
 }
