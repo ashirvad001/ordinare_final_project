@@ -17,7 +17,47 @@ let attendanceChart = null;
 window.onload = function() {
     checkAuthAndLoadData();
     initializeMobileNav();
+    initDashboardTheme();
 };
+
+// Dashboard Theme Management
+function initDashboardTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme) {
+        setDashboardTheme(savedTheme);
+    } else if (systemPrefersDark) {
+        setDashboardTheme('dark');
+    } else {
+        setDashboardTheme('light');
+    }
+    
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem('theme')) {
+            setDashboardTheme(e.matches ? 'dark' : 'light');
+        }
+    });
+}
+
+function toggleDashboardTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setDashboardTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+}
+
+function setDashboardTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const icon = document.getElementById('dashboardThemeIcon');
+    if (icon) {
+        if (theme === 'dark') {
+            icon.className = 'bi bi-moon-fill';
+        } else {
+            icon.className = 'bi bi-sun-fill';
+        }
+    }
+}
 
 // Authentication and Data Loading
 async function checkAuthAndLoadData() {

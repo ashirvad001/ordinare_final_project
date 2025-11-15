@@ -27,6 +27,11 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
+                            <button class="btn btn-link nav-link" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+                                <i class="bi bi-sun-fill" id="themeIcon"></i>
+                            </button>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="#features">Features</a>
                         </li>
                         <li class="nav-item">
@@ -409,7 +414,7 @@
                     <!-- Login Form -->
                     <div id="loginForm" class="auth-form">
                         <div class="text-center mb-4">
-                            <img src="{{ url_for('static', filename='Logo final 3.png') }}" alt="Ordinare" height="50" class="mb-3">
+                            <img src="{{ url_for('static', filename='ordinare-icon.png') }}" alt="Ordinare" height="60" class="mb-3">
                             <h3 class="fw-bold">Welcome Back!</h3>
                             <p class="text-muted">Login to continue your journey</p>
                         </div>
@@ -460,11 +465,18 @@
                     <!-- Signup Form -->
                     <div id="signupForm" class="auth-form" style="display: none;">
                         <div class="text-center mb-4">
-                            <img src="{{ url_for('static', filename='Logo final 3.png') }}" alt="Ordinare" height="50" class="mb-3">
+                            <img src="{{ url_for('static', filename='ordinare-icon.png') }}" alt="Ordinare" height="60" class="mb-3">
                             <h3 class="fw-bold">Create Account</h3>
                             <p class="text-muted">Start your journey today</p>
                         </div>
                         <form onsubmit="handleSignup(event)">
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                    <input type="email" class="form-control" id="modalSignupEmail" placeholder="your@email.com" required>
+                                </div>
+                            </div>
                             <div class="mb-3">
                                 <label class="form-label">Username</label>
                                 <div class="input-group">

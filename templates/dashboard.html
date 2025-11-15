@@ -20,19 +20,21 @@
                          alt="Ordinare Logo" 
                          style="height: 70px; width: auto; object-fit: contain;">
                     <div>
-                        <div class="d-flex align-items-center" style="gap: 10px;">
-                            <h2 class="text-white mb-0 fw-bold" style="letter-spacing: 1px;">Ordinare</h2>
-                            <span class="badge bg-light text-success version-badge-small">V2.0</span>
-                        </div>
+                        <h2 class="text-white mb-0 fw-bold" style="letter-spacing: 1px;">Ordinare</h2>
                         <p class="text-white-50 mb-0 small d-none d-md-block">
                             Smart Student Management System
                         </p>
                     </div>
                 </div>
-                <div id="headerUserInfo" class="text-white d-none">
-                    <div class="text-end">
-                        <div class="fw-bold" id="headerUsername">Welcome!</div>
-                        <small class="opacity-75">Logged in</small>
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-link text-white" id="dashboardThemeToggle" onclick="toggleDashboardTheme()" title="Toggle theme">
+                        <i class="bi bi-sun-fill" id="dashboardThemeIcon" style="font-size: 1.3rem;"></i>
+                    </button>
+                    <div id="headerUserInfo" class="text-white d-none">
+                        <div class="text-end">
+                            <div class="fw-bold" id="headerUsername">Welcome!</div>
+                            <small class="opacity-75">Logged in</small>
+                        </div>
                     </div>
                 </div>
             </div>

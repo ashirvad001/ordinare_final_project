@@ -42,11 +42,12 @@ def dashboard():
 def signup():
     """Handles new user registration with password hashing."""
     data = request.json
+    email = data.get('email')
     username = data.get('username')
     password = data.get('password')
 
-    if not username or not password:
-        return jsonify({'success': False, 'message': 'Username and password are required.'})
+    if not username or not password or not email:
+        return jsonify({'success': False, 'message': 'Email, username and password are required.'})
 
     user_file = get_user_filepath(username)
     if os.path.exists(user_file):
@@ -54,6 +55,7 @@ def signup():
 
     # Create a new user file with hashed password
     default_data = {
+        'email': email,
         'password': generate_password_hash(password),
         'app_data': {
             'subjects': [],

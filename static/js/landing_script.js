@@ -1,6 +1,49 @@
 // Initialize AOS
 AOS.init({ duration: 800, once: true });
 
+// Theme Management
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme) {
+        setTheme(savedTheme);
+    } else if (systemPrefersDark) {
+        setTheme('dark');
+    } else {
+        setTheme('light');
+    }
+    
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem('theme')) {
+            setTheme(e.matches ? 'dark' : 'light');
+        }
+    });
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+}
+
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const icon = document.getElementById('themeIcon');
+    if (icon) {
+        if (theme === 'dark') {
+            icon.className = 'bi bi-moon-fill';
+        } else {
+            icon.className = 'bi bi-sun-fill';
+        }
+    }
+}
+
+// Initialize theme on page load
+initTheme();
+
 function showAuthModal(type) {
     const modal = new bootstrap.Modal(document.getElementById('authModal'));
     switchAuthForm(type);
@@ -45,6 +88,7 @@ async function handleLogin(event) {
 
 async function handleSignup(event) {
     event.preventDefault();
+    const email = document.getElementById('modalSignupEmail').value;
     const username = document.getElementById('modalSignupUsername').value;
     const password = document.getElementById('modalSignupPassword').value;
     
@@ -52,7 +96,7 @@ async function handleSignup(event) {
         const response = await fetch('/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ email, username, password })
         });
         const result = await response.json();
         
@@ -90,3 +134,6 @@ function signupWithFacebook() {
     // TODO: Implement Facebook OAuth
     // window.location.href = '/auth/facebook';
 }
+
+// Initialize theme when DOM is loaded
+document.addEventListener('DOMContentLoaded', initTheme);
