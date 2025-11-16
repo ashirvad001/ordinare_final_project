@@ -103,10 +103,10 @@ Ordinare is a comprehensive web-based student management system with **AI/ML-pow
 - Smooth transitions
 
 #### 11. **User Authentication**
-- Secure signup with email verification
-- Password hashing (Werkzeug scrypt)
+- Simple email/password signup
+- Secure password hashing (Werkzeug scrypt)
 - Session-based authentication
-- OAuth UI ready (Google, Facebook)
+- Google OAuth support (optional)
 
 ## 🚀 Getting Started
 
@@ -115,7 +115,7 @@ Ordinare is a comprehensive web-based student management system with **AI/ML-pow
 - Python 3.8 or higher
 - pip (Python package installer)
 
-### Installation
+### Quick Start (3 Steps)
 
 1. **Clone the repository**
    ```bash
@@ -124,30 +124,31 @@ Ordinare is a comprehensive web-based student management system with **AI/ML-pow
    ```
 
 2. **Install dependencies**
-   
-   **Windows:**
-   ```bash
-   install_dependencies.bat
-   ```
-   
-   **Linux/Mac:**
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Train ML Models** (Optional - Pre-trained models included)
+3. **Run the application**
+   
+   **Windows:**
    ```bash
-   python train_models.py
+   START_APP.bat
    ```
-
-4. **Run the application**
+   
+   **Linux/Mac:**
    ```bash
    python app.py
    ```
 
-5. **Access the application**
+4. **Access the application**
    - Open browser: `http://127.0.0.1:5000`
    - Demo credentials: `username: demo`, `password: demo123`
+
+### Optional: Train ML Models
+```bash
+python train_models.py
+```
+(Pre-trained models are already included)
 
 ## 📋 Requirements
 
@@ -159,6 +160,8 @@ openpyxl>=3.1.0
 Werkzeug>=2.3.0
 scikit-learn>=1.3.0
 numpy>=1.24.0
+razorpay>=1.4.1
+google-auth>=2.23.0
 ```
 
 ## 🎯 How It Works
@@ -343,7 +346,16 @@ For support, email support@ordinare.com or open an issue in the GitHub repositor
 
 ## 🔄 Version History
 
-- **v2.0** (Current) - AI-Powered Release
+- **v2.1** (Current) - Enhanced Release
+  - ✅ **Responsive Design**: Mobile-first approach with touch interactions
+  - ✅ **Smooth Animations**: GPU-accelerated transitions
+  - ✅ **Performance Optimizations**: Debounced saves, lazy loading
+  - ✅ **Simplified Authentication**: Streamlined signup process
+  - ✅ **Google OAuth Ready**: Optional Google login support
+  - ✅ **Enhanced Mobile UX**: Bottom navigation, haptic feedback
+  - ✅ **Accessibility**: Keyboard navigation, focus states
+
+- **v2.0** - AI-Powered Release
   - ✅ **Grade Predictor**: Ensemble ML model (RF + GB + Ridge)
   - ✅ **Attendance Risk Alert**: Logistic Regression (93% accuracy)
   - ✅ **Study Time Optimizer**: Random Forest (R² 0.82)
@@ -356,8 +368,7 @@ For support, email support@ordinare.com or open an issue in the GitHub repositor
   - ✅ **Enhanced UI/UX**: Modern glassmorphism design
   - ✅ **Modular Architecture**: Separated ML modules
 
-- **v1.0**
-  - Initial release
+- **v1.0** - Initial Release
   - Basic attendance tracking
   - Timetable management
   - Bunk calculator
@@ -369,8 +380,9 @@ For support, email support@ordinare.com or open an issue in the GitHub repositor
 - [x] Attendance Risk Alert (ML-powered)
 - [x] Study Time Optimizer (ML-powered)
 - [x] Payment Gateway Integration
+- [x] Responsive Mobile Design
+- [x] Google OAuth Support (Optional)
 - [ ] Real Razorpay Payment Integration
-- [ ] Google OAuth Implementation
 - [ ] Facebook OAuth Implementation
 - [ ] CGPA Calculator
 - [ ] Advanced Analytics Dashboard

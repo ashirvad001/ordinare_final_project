@@ -1,0 +1,29 @@
+{
+    "email": "anujkumarbrand1121@gmail.com",
+    "password": "scrypt:32768:8:1$woieOm8IvzJgrB35$1cf57b3ae862b7fdedecb0800364cd57c90fe2057ce9e7b2742e1e7bb5e475f5d0edc47b520911e9388f17a484936b97ad66671e62feea6b9f4cb0c4e3d5f168",
+    "email_verified": true,
+    "premium": false,
+    "premium_expiry": null,
+    "app_data": {
+        "subjects": [],
+        "timetable": {},
+        "attendanceData": {},
+        "timeSlots": [
+            "9:00 AM-10:00 AM",
+            "10:00 AM-11:00 AM",
+            "11:00 AM-12:00 PM",
+            "12:00 PM-1:00 PM",
+            "1:00 PM-2:00 PM",
+            "2:00 PM-3:00 PM",
+            "3:00 PM-4:00 PM",
+            "4:00 PM-5:00 PM"
+        ],
+        "studentName": "",
+        "universityRollNo": "",
+        "studySessions": [],
+        "studyGoals": {
+            "daily": 2,
+            "weekly": 14
+        }
+    }
+}

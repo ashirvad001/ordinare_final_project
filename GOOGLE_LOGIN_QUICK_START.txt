@@ -1,0 +1,104 @@
+========================================
+GOOGLE LOGIN - QUICK START
+========================================
+
+STEP 1: Get Google Client ID (5 minutes)
+-----------------------------------------
+1. Go to: https://console.cloud.google.com/
+2. Create new project: "Ordinare"
+3. Enable "Google+ API"
+4. Create OAuth Client ID (Web application)
+5. Add authorized origins:
+   - http://localhost:5000
+   - http://127.0.0.1:5000
+6. Copy Client ID
+
+STEP 2: Install Package
+------------------------
+pip install google-auth
+
+STEP 3: Enable Google Login
+----------------------------
+Option A - Interactive:
+  Double-click: enable_google_login.bat
+
+Option B - Manual:
+  set GOOGLE_CLIENT_ID=your_client_id_here
+  python app.py
+
+STEP 4: Test It
+---------------
+1. Open: http://127.0.0.1:5000
+2. Click "Login" or "Sign Up"
+3. Click "Continue with Google"
+4. Select Google account
+5. Done! ✓
+
+========================================
+HOW IT WORKS
+========================================
+
+✓ One-click login with Google account
+✓ No password needed
+✓ Auto account creation for new users
+✓ Email automatically verified
+✓ Profile picture imported
+✓ Secure token verification
+
+========================================
+FEATURES
+========================================
+
+For New Users:
+- Username from email (john@gmail.com → john)
+- Random secure password assigned
+- Email marked as verified
+- Name from Google profile
+
+For Existing Users:
+- Instant login
+- No password required
+- Recognized by Google ID
+
+========================================
+TROUBLESHOOTING
+========================================
+
+Issue: "Google login not configured"
+Fix: Set GOOGLE_CLIENT_ID environment variable
+
+Issue: "Redirect URI mismatch"
+Fix: Add http://localhost:5000 to Google Console
+
+Issue: Popup blocked
+Fix: Allow popups for localhost
+
+========================================
+DISABLE GOOGLE LOGIN
+========================================
+
+Don't set GOOGLE_CLIENT_ID:
+  python app.py
+
+Buttons will show "not configured" message.
+
+========================================
+FILES CREATED
+========================================
+
+✓ google_oauth.py - OAuth service
+✓ GOOGLE_LOGIN_SETUP.md - Full guide
+✓ enable_google_login.bat - Setup script
+✓ Updated app.py - Backend routes
+✓ Updated landing.html - Frontend integration
+
+========================================
+READY TO USE!
+========================================
+
+Default: Google login DISABLED
+Enable: Set GOOGLE_CLIENT_ID variable
+
+See GOOGLE_LOGIN_SETUP.md for detailed guide.
+
+========================================

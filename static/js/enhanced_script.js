@@ -19,7 +19,54 @@ window.onload = function() {
     checkAuthAndLoadData();
     initializeMobileNav();
     initDashboardTheme();
+    initSmoothScroll();
+    initIntersectionObserver();
 };
+
+// Smooth scroll behavior
+function initSmoothScroll() {
+    document.documentElement.style.scrollBehavior = 'smooth';
+}
+
+// Intersection Observer for animations
+function initIntersectionObserver() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    // Observe cards when they're added
+    const observeCards = () => {
+        document.querySelectorAll('.glass-card, .stat-card').forEach(card => {
+            if (!card.dataset.observed) {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                observer.observe(card);
+                card.dataset.observed = 'true';
+            }
+        });
+    };
+    
+    // Initial observation
+    setTimeout(observeCards, 100);
+    
+    // Re-observe when tab changes
+    const originalShowTab = window.showTab;
+    window.showTab = function(tabName) {
+        originalShowTab(tabName);
+        setTimeout(observeCards, 100);
+    };
+}
 
 // Dashboard Theme Management
 function initDashboardTheme() {
@@ -95,12 +142,18 @@ function updateLoginState(isLoggedIn) {
     }
 }
 
-// Tab Navigation
+// Tab Navigation with smooth transitions
 function showTab(tabName) {
-    // Remove active from all tabs and nav items
-    document.querySelectorAll('.tab-content-panel').forEach(panel => {
-        panel.classList.remove('active');
-    });
+    // Fade out current tab
+    const currentTab = document.querySelector('.tab-content-panel.active');
+    if (currentTab) {
+        currentTab.style.opacity = '0';
+        setTimeout(() => {
+            currentTab.classList.remove('active');
+        }, 150);
+    }
+    
+    // Remove active from all nav items
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
     });
@@ -108,11 +161,20 @@ function showTab(tabName) {
         item.classList.remove('active');
     });
 
-    // Activate selected tab
-    const tabPanel = document.getElementById(tabName);
-    if (tabPanel) {
-        tabPanel.classList.add('active');
-    }
+    // Activate selected tab with fade in
+    setTimeout(() => {
+        const tabPanel = document.getElementById(tabName);
+        if (tabPanel) {
+            tabPanel.classList.add('active');
+            tabPanel.style.opacity = '0';
+            setTimeout(() => {
+                tabPanel.style.opacity = '1';
+            }, 50);
+        }
+    }, 150);
+    
+    // Scroll to top smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Activate corresponding nav items (both sidebar and mobile)
     document.querySelectorAll('.nav-item').forEach(item => {
@@ -137,15 +199,53 @@ function showTab(tabName) {
     }
 }
 
-// Mobile Navigation
+// Mobile Navigation with haptic feedback
 function initializeMobileNav() {
     const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
     mobileNavItems.forEach(item => {
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function(e) {
+            // Haptic feedback for mobile
+            if (navigator.vibrate) {
+                navigator.vibrate(10);
+            }
+            
             mobileNavItems.forEach(nav => nav.classList.remove('active'));
             this.classList.add('active');
+            
+            // Add ripple effect
+            const ripple = document.createElement('span');
+            ripple.style.cssText = `
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(44, 62, 80, 0.3);
+                width: 100px;
+                height: 100px;
+                margin-top: -50px;
+                margin-left: -50px;
+                animation: ripple 0.6s;
+                pointer-events: none;
+            `;
+            ripple.style.left = e.clientX - this.getBoundingClientRect().left + 'px';
+            ripple.style.top = e.clientY - this.getBoundingClientRect().top + 'px';
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
         });
     });
+    
+    // Add ripple animation
+    if (!document.getElementById('ripple-style')) {
+        const style = document.createElement('style');
+        style.id = 'ripple-style';
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
 }
 
 // User Authentication Functions
@@ -219,27 +319,37 @@ async function logout() {
 }
 
 // Data Management
+// Debounced save function for better performance
+let saveDataTimeout = null;
 async function saveData() {
     if (!currentUsername) return;
     
-    const dataToSave = { 
-        subjects, 
-        timetable, 
-        attendanceData, 
-        timeSlots, 
-        studentName, 
-        universityRollNo 
-    };
-    
-    try {
-        await fetch('/save_data', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dataToSave)
-        });
-    } catch (error) {
-        console.error('Error saving data:', error);
+    // Clear existing timeout
+    if (saveDataTimeout) {
+        clearTimeout(saveDataTimeout);
     }
+    
+    // Debounce save by 500ms
+    saveDataTimeout = setTimeout(async () => {
+        const dataToSave = { 
+            subjects, 
+            timetable, 
+            attendanceData, 
+            timeSlots, 
+            studentName, 
+            universityRollNo 
+        };
+        
+        try {
+            await fetch('/save_data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataToSave)
+            });
+        } catch (error) {
+            console.error('Error saving data:', error);
+        }
+    }, 500);
 }
 
 async function loadData() {
@@ -1146,18 +1256,35 @@ async function clearAllData() {
     }
 }
 
+// Enhanced alert with slide-in animation
 function showAlert(message, type = 'info') {
     const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
-    alertDiv.style.zIndex = '9999';
+    alertDiv.className = `alert alert-${type} alert-dismissible fade position-fixed top-0 start-50 translate-middle-x mt-3`;
+    alertDiv.style.cssText = `
+        z-index: 9999;
+        min-width: 300px;
+        max-width: 500px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translate(-50%, -100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    `;
     alertDiv.innerHTML = `
+        <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
     document.body.appendChild(alertDiv);
     
+    // Slide in
     setTimeout(() => {
-        alertDiv.remove();
+        alertDiv.style.transform = 'translate(-50%, 0)';
+        alertDiv.classList.add('show');
+    }, 10);
+    
+    // Slide out and remove
+    setTimeout(() => {
+        alertDiv.style.transform = 'translate(-50%, -100%)';
+        setTimeout(() => alertDiv.remove(), 300);
     }, 3000);
 }
 

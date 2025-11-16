@@ -15,11 +15,16 @@ import numpy as np
 from attendance_risk import AttendanceRiskPredictor
 from study_optimizer import StudyTimeOptimizer
 from grade_predictor_model import GradePredictor
+from google_oauth import GoogleOAuth
 
 # --- App Configuration ---
 app = Flask(__name__)
 # IMPORTANT: Use environment variable in production
 app.secret_key = os.environ.get('SECRET_KEY', 'your_very_secret_key_for_sessions')
+
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+USE_GOOGLE_OAUTH = bool(GOOGLE_CLIENT_ID)
 
 # Payment Configuration (Mock for demo)
 PREMIUM_PRICE = 99  # ₹99/year
@@ -60,6 +65,9 @@ def attendance_risk():
 def study_optimizer():
     """Serves the study time optimizer page."""
     return render_template('study_optimizer.html')
+
+# Initialize Google OAuth
+google_oauth = GoogleOAuth(GOOGLE_CLIENT_ID) if USE_GOOGLE_OAUTH else None
 
 # --- Authentication Routes ---
 @app.route('/signup', methods=['POST'])
@@ -120,6 +128,35 @@ def login():
     else:
         return jsonify({'success': False, 'message': 'Incorrect password.'})
 
+@app.route('/google_login', methods=['POST'])
+def google_login():
+    """Handle Google OAuth login"""
+    if not USE_GOOGLE_OAUTH:
+        return jsonify({'success': False, 'message': 'Google OAuth not configured'}), 400
+    
+    data = request.json
+    token = data.get('credential')
+    
+    if not token:
+        return jsonify({'success': False, 'message': 'No token provided'}), 400
+    
+    # Verify token
+    result = google_oauth.verify_token(token)
+    
+    if not result['success']:
+        return jsonify({'success': False, 'message': 'Invalid token'}), 401
+    
+    # Check if user exists
+    username = google_oauth.find_user_by_google_id(result['google_id'], DATA_DIR)
+    
+    if not username:
+        # Create new user
+        username = google_oauth.create_user_from_google(result, DATA_DIR)
+    
+    # Log user in
+    session['username'] = username
+    return jsonify({'success': True, 'username': username})
+
 @app.route('/logout', methods=['POST'])
 def logout():
     session.pop('username', None)
@@ -128,8 +165,17 @@ def logout():
 @app.route('/check_auth')
 def check_auth():
     if 'username' in session:
-        return jsonify({'authenticated': True, 'username': session['username']})
-    return jsonify({'authenticated': False})
+        return jsonify({
+            'authenticated': True, 
+            'username': session['username'],
+            'google_oauth_enabled': USE_GOOGLE_OAUTH,
+            'google_client_id': GOOGLE_CLIENT_ID if USE_GOOGLE_OAUTH else None
+        })
+    return jsonify({
+        'authenticated': False,
+        'google_oauth_enabled': USE_GOOGLE_OAUTH,
+        'google_client_id': GOOGLE_CLIENT_ID if USE_GOOGLE_OAUTH else None
+    })
 
 # --- Data Handling Routes ---
 @app.route('/save_data', methods=['POST'])
